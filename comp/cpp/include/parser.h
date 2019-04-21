@@ -3,6 +3,8 @@
 
 #include "lexer.h"
 #include "inter.h"
+#include "symbols.h"
+
 class Parser
 {
 public:
@@ -12,9 +14,11 @@ public:
 private:
     Token *look;
     Lexer *lex;
-    int used;
+    Env *env;
+    unsigned long used;
     void move();
     void match(int tag);
+    void func();
     Expr *expr();
     Expr *term();
     Expr *unary();

@@ -3,7 +3,7 @@
 
 
 Parser::Parser(Lexer *lex) :
-    lex(lex)
+    lex(lex), env(new Env)
 {
     move();
 }
@@ -19,13 +19,44 @@ void Parser::match(int tag)
     {
         move();
     } else {
-        std::cerr << "error" << std::endl;
+        std::cerr << "error: expeted" << tag << std::endl;
     }
 }
 
 Expr *Parser::parse()
 {
+    func();
+    match('=');
     return expr();
+}
+
+void Parser::func()
+{
+    match(Tag::ID);
+    match('(');
+    if (look->tag() != ')')
+    {
+        do {
+            if (look->tag() == Tag::ID)
+            {
+                if (env->get(look))
+                {
+                    std::cerr << "used: " << look->val() << std::endl;
+                } else {
+                    env->set(look, new Id(look, used));
+                    used += sizeof(double);
+                }
+                move();
+            }
+            if (look->tag() == ')')
+            {
+                break;
+            }
+            std::cout << look->tag() << std::endl;
+            match(',');
+        } while (true);
+    }
+    move();
 }
 
 Expr *Parser::expr()
@@ -78,6 +109,15 @@ Expr *Parser::factor()
             x = expr();
             match(')');
             return x;
+        case Tag::ID:{
+            Id *i = env->get(look);
+            if (i == nullptr)
+            {
+                std::cerr << "undeclared variable: " << look->val() << std::endl;
+            }
+            move();
+            return i;
+        }
         default:
             std::cerr << "syntax error1" << std::endl;
             std::cerr << look->val() << std::endl;
