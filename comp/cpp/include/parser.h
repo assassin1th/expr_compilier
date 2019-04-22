@@ -23,6 +23,8 @@ private:
     Expr *term();
     Expr *unary();
     Expr *factor();
+    Expr *call();
+    Expr *variable();
 };
 
 #endif // PARSER_H

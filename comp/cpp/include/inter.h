@@ -2,6 +2,7 @@
 #define INTER_H
 
 #include "lexer.h"
+#include <vector>
 
 class Expr
 {
@@ -58,6 +59,16 @@ public:
 private:
     Expr *lexpr;
     Expr *rexpr;
+};
+
+class Call : public Op
+{
+public:
+    Call(Token *op, std::vector<Expr *> &args);
+    virtual ~Call();
+    virtual double calc(double *arg);
+private:
+    std::vector<Expr *> args;
 };
 
 #endif // INTER_H

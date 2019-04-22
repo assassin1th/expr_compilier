@@ -109,15 +109,8 @@ Expr *Parser::factor()
             x = expr();
             match(')');
             return x;
-        case Tag::ID:{
-            Id *i = env->get(look);
-            if (i == nullptr)
-            {
-                std::cerr << "undeclared variable: " << look->val() << std::endl;
-            }
-            move();
-            return i;
-        }
+        case Tag::ID:
+            return call();
         default:
             std::cerr << "syntax error1" << std::endl;
             std::cerr << look->val() << std::endl;
@@ -125,3 +118,34 @@ Expr *Parser::factor()
             return x;
     }
 }
+
+Expr *Parser::call()
+{
+    Token *tmp = look;
+    move();
+    if (look->tag() == '(')
+    {
+        move();
+        std::vector<Expr *> args;
+        if (look->tag() != ')')
+        {
+            do {
+                args.push_back(expr());
+                if (look->tag() == ')')
+                {
+                    break;
+                }
+                match(',');
+            } while (true);
+        }
+        return new Call(tmp, args);
+    } else {
+        Id *i = env->get(tmp);
+        if (i == nullptr)
+        {
+            std::cerr << "undeclared variable: " << tmp->val() << std::endl;
+        }
+        return i;
+    }
+}
+

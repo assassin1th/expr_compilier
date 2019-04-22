@@ -95,3 +95,44 @@ double Constant::calc(double *)
 {
     return val;
 }
+
+Call::Call(Token *op, std::vector<Expr *> &args) :
+    Op(op), args(args)
+{
+}
+
+Call::~Call()
+{
+}
+
+double Call::calc(double *arg)
+{
+    return 0.0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
