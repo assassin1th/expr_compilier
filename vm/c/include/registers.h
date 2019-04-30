@@ -5,6 +5,7 @@
 
 typedef struct {
     uint16_t fsp:3;
+    uint16_t stat:3;
 } cond_t;
 
 typedef struct {
@@ -12,7 +13,12 @@ typedef struct {
 } pc_t;
 
 typedef struct {
-    uint16_t offset;
+    uint8_t *top;
 } sp_t;
+
+typedef struct
+{
+    uint8_t *prev_stack_top;
+} tmp_sp_t;
 
 #endif // REGISTERS_H_
