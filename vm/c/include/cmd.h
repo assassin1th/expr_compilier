@@ -12,8 +12,8 @@ enum cmd
 
 typedef struct
 {
-    uint8_t unused_bits:3;
     uint8_t id:5;
+    uint8_t unused_bits:3;
 } cmd_t;
 
 typedef struct
@@ -58,14 +58,14 @@ typedef struct
     uint8_t id:5;
     uint8_t src_mode:1;
     uint8_t data_type:2;
-    uint8_t real[0];
+    uint8_t real[sizeof (double)];
 } ld_cmd_real_t;
 
 typedef struct
 {
     uint8_t id:5;
     uint8_t unused_bits:3;
-    uint8_t offset[0];
+    uint8_t offset[sizeof (uint16_t)];
 } call_cmd_t;
 
 typedef struct

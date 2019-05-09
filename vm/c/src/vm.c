@@ -23,7 +23,6 @@ exec(vm_t *vm)
     while (running)
     {
         cmd_t *cmd = (cmd_t *) vm->pc.pcmd;
-        printf("%d\n", cmd->id);
         switch (cmd->id)
         {
             case END:
@@ -176,7 +175,7 @@ fdiv(double *stack, cond_t *cond, pc_t *pc)
     {
         stack[cond->fsp] = stack[cond->fsp + 1] / stack[cond->fsp];
     } else {
-        stack[cond->fsp] = stack[cond->fsp] / stack[cond->fsp];
+        stack[cond->fsp] = stack[cond->fsp] / stack[cond->fsp + 1];
     }
     pc->pcmd += sizeof (arith_cmd_t);
 }
@@ -202,7 +201,7 @@ flog(double *stack, cond_t *cond, pc_t *pc)
     {
         stack[cond->fsp] = _log(stack[cond->fsp + 1], stack[cond->fsp]);
     } else {
-        stack[cond->fsp] = _log(stack[cond->fsp], stack[cond->fsp]);
+        stack[cond->fsp] = _log(stack[cond->fsp], stack[cond->fsp + 1]);
     }
     pc->pcmd += sizeof (arith_cmd_t);
 }
@@ -312,7 +311,7 @@ fld_mem(double *stack, cond_t *cond, pc_t *pc, uint8_t *mem)
 {
     ++(cond->fsp);
     stack[cond->fsp] = mem[*(uint16_t *) ((ld_cmd_mem_t *) pc->pcmd)->offset];
-    pc->pcmd += sizeof (ld_cmd_mem_t) + sizeof (uint16_t);
+    pc->pcmd += sizeof (ld_cmd_mem_t);
 }
 
 inline void
@@ -320,7 +319,7 @@ fld_real(double *stack, cond_t *cond, pc_t *pc)
 {
     ++(cond->fsp);
     stack[cond->fsp] = *(double *) ((ld_cmd_real_t *) pc->pcmd)->real;
-    pc->pcmd += sizeof (ld_cmd_real_t) + sizeof (double);
+    pc->pcmd += sizeof (ld_cmd_real_t);
 }
 
 inline void
@@ -328,7 +327,7 @@ push_mem(sp_t *sp, pc_t *pc, uint8_t *mem)
 {
     *(double *) sp->top = mem[*(uint16_t *) ((ld_cmd_mem_t *) pc->pcmd)->offset];
     sp->top += sizeof (double);
-    pc->pcmd += sizeof (ld_cmd_mem_t) + sizeof (uint16_t);
+    pc->pcmd += sizeof (ld_cmd_mem_t);
 }
 
 inline void
@@ -336,7 +335,7 @@ push_real(sp_t *sp, pc_t *pc)
 {
     *(double *) sp->top = *(double *) ((ld_cmd_real_t *) pc->pcmd)->real;
     sp->top += sizeof (double);
-    pc->pcmd += sizeof (ld_cmd_real_t) + sizeof (double);
+    pc->pcmd += sizeof (ld_cmd_real_t);
 }
 
 inline void
