@@ -12,6 +12,7 @@ enum cmd
 
 typedef struct
 {
+    uint8_t unused_bits:3;
     uint8_t id:5;
 } cmd_t;
 
