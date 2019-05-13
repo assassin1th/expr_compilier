@@ -46,6 +46,7 @@ public:
     Token *scan();
 private:
     void readch();
+    void reserve();
     bool readch(int c);
     Table<Token> *_tab;
     std::string::const_iterator _str;
