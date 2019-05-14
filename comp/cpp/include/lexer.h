@@ -44,9 +44,9 @@ public:
     Lexer(const std::string src);
     ~Lexer();
     Token *scan();
+    void reserve(Token *tok, const std::string key);
 private:
     void readch();
-    void reserve();
     bool readch(int c);
     Table<Token> *_tab;
     std::string::const_iterator _str;

@@ -70,9 +70,13 @@ bool Lexer::readch(int c)
     return false;
 }
 
+void Lexer::reserve(Token *tok, const std::string key)
+{
+    _tab->set(tok, key);
+}
+
 Token *Lexer::scan()
 {
-    std::cout << "ku1" << std::endl;
     for (;;readch())
     {
         if (isspace(_peek))
@@ -96,8 +100,6 @@ Token *Lexer::scan()
         if (w != nullptr) {
             return w;
         }
-
-        std::cout << buf << std::endl;
         _tab->set(w = new Word(Tag::ID, buf), buf);
         return w;
     } else if (isdigit(_peek)) {
@@ -115,9 +117,6 @@ Token *Lexer::scan()
                 readch();
             } while (isdigit(_peek));
         }
-
-        std::cout << "ku2" << std::endl;
-        std::cout << buf << std::endl;
         Token *r = _tab->get(buf);
 
         if (r != nullptr)
@@ -125,14 +124,9 @@ Token *Lexer::scan()
             std::cout << r->val() << std::endl;
             return r;
         }
-        std::cout << "ku2" << std::endl;
-
         _tab->set(r = new Real(buf), buf);
-
-        std::cout << "ku2" << std::endl;
-            return r;
+        return r;
     }
-    std::cout << "ku2" << std::endl;
     Token *t = new Token(_peek);
     _peek = ' ';
     return t;

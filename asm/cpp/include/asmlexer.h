@@ -5,7 +5,7 @@
 
 enum MnemonicTag
 {
-    END = 256, SUB, SUM, MUL, DIV, POW, LOG, SIN,
+    END = Tag::REAL + 1, SUB, SUM, MUL, DIV, POW, LOG, SIN,
     COS, TAN, CTAN, ASIN, ACOS, ATAN, ACT, FLD,
     RET, PUSH, POP, CALL
 };
@@ -15,7 +15,6 @@ class AsmLexer : public Lexer
 public:
     AsmLexer(const std::string src);
     ~AsmLexer();
-    Token *scan();
 private:
 
 };
