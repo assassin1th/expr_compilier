@@ -12,11 +12,9 @@ public:
     ~Parser();
     Expr *parse();
 private:
-    Token *look;
     Lexer *lex;
     Env *env;
     unsigned long used;
-    void move();
     void match(int tag);
     void func();
     Expr *expr();
@@ -25,6 +23,9 @@ private:
     Expr *factor();
     Expr *call();
     Expr *variable();
+protected:
+    void move();
+    Token *look;
 };
 
 #endif // PARSER_H

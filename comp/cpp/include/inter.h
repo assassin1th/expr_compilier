@@ -4,6 +4,14 @@
 #include "lexer.h"
 #include <vector>
 
+class Stmt
+{
+public:
+    Stmt();
+    virtual ~Stmt();
+    virtual std::string gen();
+};
+
 class Expr
 {
 public:

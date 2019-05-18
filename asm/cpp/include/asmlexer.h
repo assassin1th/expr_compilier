@@ -5,7 +5,8 @@
 
 enum MnemonicTag
 {
-    END = Tag::REAL + 1, SUB, SUM, MUL, DIV, POW, LOG, SIN,
+    END = Tag::REAL + 1, SUB, SUBR, SUM, SUMR, MUL,
+    MULR, DIV, DIVR, POW, POWR, LOG, LOGR, SIN,
     COS, TAN, CTAN, ASIN, ACOS, ATAN, ACT, FLD,
     RET, PUSH, POP, CALL
 };

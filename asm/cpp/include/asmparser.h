@@ -9,7 +9,8 @@ public:
     AsmParser(Lexer *lex);
     ~AsmParser();
 private:
-
+    Stmt *stmts();
+    Stmt *stmt();
 };
 
 #endif // ASMPARSER_H_
