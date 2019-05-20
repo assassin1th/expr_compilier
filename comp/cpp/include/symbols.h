@@ -1,21 +1,26 @@
 #ifndef SYMBOLS_H
 #define SYMBOLS_H
 
-#include "cont/cpp/include/hashtable.h"
+#include "cont/cpp/include/containers.h"
 #include "lexer.h"
 #include "inter.h"
+
+namespace Symbols
+{
 
 class Env
 {
 public:
     Env();
     ~Env();
-    void set(Token *w, Id *i);
-    Id *get(Token *w);
+    void set(CompLexer::Token *w, Inter::Id *i);
+    Inter::Id *get(CompLexer::Token *w);
 private:
-    Cont<Id> *tab;
+    Containers::Cont<Inter::Id> *m_tab;
 protected:
-    Env *prev;
+    Env *m_prev;
 };
+
+}
 
 #endif // SYMBOLS_H

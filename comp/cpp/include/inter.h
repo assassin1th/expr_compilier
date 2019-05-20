@@ -4,6 +4,9 @@
 #include "lexer.h"
 #include <vector>
 
+namespace Inter
+{
+
 class Stmt
 {
 public:
@@ -15,70 +18,71 @@ public:
 class Expr
 {
 public:
-    Expr(Token *op);
+    Expr(CompLexer::Token *op);
     virtual ~Expr();
     virtual double calc(double *arg);
-    Token *op;
+    CompLexer::Token *m_op;
 };
 
 class Id : public Expr
 {
 public:
-    Id(Token *w, unsigned long d);
+    Id(CompLexer::Token *w, unsigned long d);
     virtual ~Id();
     virtual double calc(double *arg);
 private:
-    unsigned long offset;
+    unsigned long m_offset;
 };
 
 class Constant : public Expr
 {
 public:
-    Constant(Token *op);
+    Constant(CompLexer::Token *op);
     virtual ~Constant();
     virtual double calc(double *);
 private:
-    double val;
+    double m_val;
 };
 
 class Op : public Expr
 {
 public:
-    Op(Token *op);
+    Op(CompLexer::Token *op);
     virtual ~Op();
 };
 
 class Unary : public Op
 {
 public:
-    Unary(Token *op, Expr *expr);
+    Unary(CompLexer::Token *op, Expr *expr);
     virtual ~Unary();
     virtual double calc(double *arg);
 private:
-    Expr *expr;
+    Expr *m_expr;
 };
 
 class Arith : public Op
 {
 public:
-    Arith(Token *op, Expr *lexpr, Expr *rexpr);
+    Arith(CompLexer::Token *op, Expr *lexpr, Expr *rexpr);
     virtual ~Arith();
     virtual double calc(double *arg);
 private:
-    Expr *lexpr;
-    Expr *rexpr;
+    Expr *m_lexpr;
+    Expr *m_rexpr;
 };
 
 class Call : public Op
 {
 public:
-    Call(Token *op, std::vector<Expr *> &args);
+    Call(CompLexer::Token *op, std::vector<Expr *> &args);
     virtual ~Call();
     virtual double calc(double *arg);
 private:
-    std::vector<Expr *> args;
+    std::vector<Expr *> m_args;
 };
 
+}
 #endif // INTER_H
 
 

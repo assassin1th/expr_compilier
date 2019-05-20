@@ -1,21 +1,35 @@
 #include "comp/cpp/include/parser.h"
 #include <iostream>
 
+using namespace CompParser;
+using CompLexer::Lexer;
+using CompLexer::Token;
+using Symbols::Env;
+using Inter::Expr;
+using Inter::Id;
 
 Parser::Parser(Lexer *lex) :
-    lex(lex), env(new Env)
+    m_lex(lex), m_env(new Env)
 {
     move();
 }
 
-void Parser::move()
+Parser::~Parser()
 {
-    look = lex->scan();
+    delete m_env;
+    delete m_lex;
 }
 
-void Parser::match(int tag)
+void
+Parser::move()
 {
-    if (look->tag() == tag)
+    m_look = m_lex->scan();
+}
+
+void
+Parser::match(int tag)
+{
+    if (m_look->tag() == tag)
     {
         move();
     } else {
@@ -23,71 +37,80 @@ void Parser::match(int tag)
     }
 }
 
-Expr *Parser::parse()
+Expr *
+Parser::parse()
 {
     func();
     match('=');
     return expr();
 }
 
-void Parser::func()
+void
+Parser::func()
 {
+    using CompLexer::Tag;
     match(Tag::ID);
     match('(');
-    if (look->tag() != ')')
+    if (m_look->tag() != ')')
     {
         do {
-            if (look->tag() == Tag::ID)
+            if (m_look->tag() == Tag::ID)
             {
-                if (env->get(look))
+                if (m_env->get(m_look))
                 {
-                    std::cerr << "used: " << look->val() << std::endl;
+                    std::cerr << "used: " << m_look->val() << std::endl;
                 } else {
-                    env->set(look, new Id(look, used));
+                    m_env->set(m_look, new Id(m_look, used));
                     used += sizeof(double);
                 }
                 move();
             }
-            if (look->tag() == ')')
+            if (m_look->tag() == ')')
             {
                 break;
             }
-            std::cout << look->tag() << std::endl;
+            std::cout << m_look->tag() << std::endl;
             match(',');
         } while (true);
     }
     move();
 }
 
-Expr *Parser::expr()
+Expr *
+Parser::expr()
 {
+    using Inter::Arith;
     Expr *x = term();
-    while (look->tag() == '+' || look->tag() == '-')
+    while (m_look->tag() == '+' || m_look->tag() == '-')
     {
-        Token *tok = look;
+        Token *tok = m_look;
         move();
         x = new Arith(tok, x, term());
     }
     return x;
 }
 
-Expr *Parser::term()
+Expr *
+Parser::term()
 {
+    using Inter::Arith;
     Expr *x = unary();
-    while (look->tag() == '*' || look->tag() == '/')
+    while (m_look->tag() == '*' || m_look->tag() == '/')
     {
-        Token *tok = look;
+        Token *tok = m_look;
         move();
         x = new Arith(tok, x, unary());
     }
     return x;
 }
 
-Expr *Parser::unary()
+Expr *
+Parser::unary()
 {
-    if (look->tag() == '-')
+    using Inter::Unary;
+    if (m_look->tag() == '-')
     {
-        Token *tok = look;
+        Token *tok = m_look;
         move();
         return (new Unary(tok, unary()));
     } else {
@@ -95,13 +118,16 @@ Expr *Parser::unary()
     }
 }
 
-Expr *Parser::factor()
+Expr *
+Parser::factor()
 {
+    using CompLexer::Tag;
+    using Inter::Constant;
     Expr *x = nullptr;
-    switch (look->tag())
+    switch (m_look->tag())
     {
         case Tag::REAL:
-            x = new Constant(look);
+            x = new Constant(m_look);
             move();
             return x;
         case '(':
@@ -113,25 +139,27 @@ Expr *Parser::factor()
             return call();
         default:
             std::cerr << "syntax error1" << std::endl;
-            std::cerr << look->val() << std::endl;
-            std::cerr << look->tag() << std::endl;
+            std::cerr << m_look->val() << std::endl;
+            std::cerr << m_look->tag() << std::endl;
             return x;
     }
 }
 
-Expr *Parser::call()
+Expr *
+Parser::call()
 {
-    Token *tmp = look;
+    using Inter::Call;
+    Token *tmp = m_look;
     move();
-    if (look->tag() == '(')
+    if (m_look->tag() == '(')
     {
         move();
         std::vector<Expr *> args;
-        if (look->tag() != ')')
+        if (m_look->tag() != ')')
         {
             do {
                 args.push_back(expr());
-                if (look->tag() == ')')
+                if (m_look->tag() == ')')
                 {
                     break;
                 }
@@ -140,7 +168,7 @@ Expr *Parser::call()
         }
         return new Call(tmp, args);
     } else {
-        Id *i = env->get(tmp);
+        Id *i = m_env->get(tmp);
         if (i == nullptr)
         {
             std::cerr << "undeclared variable: " << tmp->val() << std::endl;

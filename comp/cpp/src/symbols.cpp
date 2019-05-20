@@ -1,27 +1,34 @@
 #include "comp/cpp/include/symbols.h"
 
+using namespace Symbols;
+using Containers::Table;
+using Inter::Id;
+using CompLexer::Token;
+
 Env::Env() :
-    tab(new Table<Id>), prev(nullptr)
+    m_tab(new Table<Id>), m_prev(nullptr)
 {
 }
 
 Env::~Env()
 {
-    delete prev;
-    delete tab;
+    delete m_prev;
+    delete m_tab;
 }
 
 
-void Env::set(Token *w, Id *i)
+void
+Env::set(Token *w, Id *i)
 {
-    tab = tab->set(i, w->val());
+    m_tab = m_tab->set(i, w->val());
 }
 
-Id *Env::get(Token *w)
+Id *
+Env::get(Token *w)
 {
-    for (Env *e = this; e != nullptr; e = e->prev)
+    for (Env *e = this; e != nullptr; e = e->m_prev)
     {
-        Id *i = tab->get(w->val());
+        Id *i = m_tab->get(w->val());
         if (i != nullptr)
         {
             return i;

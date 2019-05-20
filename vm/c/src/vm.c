@@ -114,7 +114,9 @@ run(uint8_t *prog)
     vm.pc.pcmd = prog;
     vm.mem = (uint8_t *) (vm.stack + FPU_STACK_SIZE);
     exec(&vm);
-    return vm.stack[vm.cond.fsp];
+    double result = vm.stack[vm.cond.fsp];
+    free(vm.stack);
+    return result;
 }
 
 #define EXPR(x, y) x = (y((x)))

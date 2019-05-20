@@ -5,27 +5,31 @@
 #include "inter.h"
 #include "symbols.h"
 
+namespace CompParser
+{
+
 class Parser
 {
 public:
-    Parser(Lexer *lex);
-    ~Parser();
-    Expr *parse();
+    Parser(CompLexer::Lexer *m_lex);
+    virtual ~Parser();
+    virtual Inter::Expr *parse();
 private:
-    Lexer *lex;
-    Env *env;
+    CompLexer::Lexer *m_lex;
+    Symbols::Env *m_env;
     unsigned long used;
     void match(int tag);
     void func();
-    Expr *expr();
-    Expr *term();
-    Expr *unary();
-    Expr *factor();
-    Expr *call();
-    Expr *variable();
+    Inter::Expr *expr();
+    Inter::Expr *term();
+    Inter::Expr *unary();
+    Inter::Expr *factor();
+    Inter::Expr *call();
+    Inter::Expr *variable();
 protected:
     void move();
-    Token *look;
+    CompLexer::Token *m_look;
 };
 
+}
 #endif // PARSER_H

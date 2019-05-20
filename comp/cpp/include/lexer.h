@@ -2,55 +2,65 @@
 #define LEXER_H_
 
 #include <string>
-#include "cont/cpp/include/hashtable.h"
+#include "cont/cpp/include/containers.h"
 
+namespace CompLexer
+{
 
-enum Tag {
+enum Tag
+{
     ID = 256,
     REAL
 };
 
-class Token {
+class Token
+{
 public:
     Token(int tag);
     virtual ~Token();
-    int tag();
-    virtual std::string val();
+    int tag() const;
+    virtual const std::string val() const;
 private:
-    int _tag;
+    int m_tag;
 };
 
-class Word : public Token {
+class Word : public Token
+{
 public:
-    Word(int tag, const std::string lexeme);
+    Word(int tag, const std::string &lexeme);
     virtual ~Word();
-    virtual std::string val();
+    virtual const std::string val() const;
 private:
-    std::string _lexeme;
+    std::string m_lexeme;
 };
 
-class Real : public Token {
+class Real : public Token
+{
 public:
-    Real(const std::string num);
+    Real(const std::string &num);
     ~Real();
-    virtual std::string val();
+    virtual const std::string val() const;
 private:
-    std::string _num;
+    std::string m_num;
 };
 
 class Lexer
 {
 public:
-    Lexer(const std::string src);
+    Lexer(const std::string &src);
     ~Lexer();
     Token *scan();
-    void reserve(Token *tok, const std::string key);
+#ifdef LEXER_TEST_
+    const std::string test();
+#endif // LEXER_TEST_
+    void reserve(Token *tok, const std::string &key);
 private:
     void readch();
     bool readch(int c);
-    Table<Token> *_tab;
-    std::string::const_iterator _str;
-    char _peek;
+    const std::string m_src_str;
+    std::string::const_iterator m_peek;
+    Containers::Table<Token> *m_tab;
 };
 
+}
 #endif // LEXER_H_
