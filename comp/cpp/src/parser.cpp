@@ -11,6 +11,17 @@ using Inter::Id;
 Parser::Parser(Lexer *lex) :
     m_lex(lex), m_env(new Env)
 {
+    using CompLexer::Word;
+    using CompLexer::Tag;
+    m_lex->reserve(new Word(Tag::COS, "cos"), "cos");
+    m_lex->reserve(new Word(Tag::COS, "sin"), "sin");
+    m_lex->reserve(new Word(Tag::COS, "tan"), "tan");
+    m_lex->reserve(new Word(Tag::COS, "ctan"), "ctan");
+    m_lex->reserve(new Word(Tag::COS, "acos"), "acos");
+    m_lex->reserve(new Word(Tag::COS, "asin"), "asin");
+    m_lex->reserve(new Word(Tag::COS, "atan"), "atan");
+    m_lex->reserve(new Word(Tag::COS, "actan"), "actan");
+    m_lex->reserve(new Word(Tag::COS, "log"), "log");
     move();
 }
 
