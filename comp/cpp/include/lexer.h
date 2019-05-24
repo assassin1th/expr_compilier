@@ -9,8 +9,8 @@ namespace CompLexer
 
 enum Tag
 {
-    ID = 256,
-    REAL
+    ID = 256, SIN, COS, TAN, CTAN, LOG,
+    ASIN, ACOS, ATAN, ACTAN, REAL
 };
 
 class Token

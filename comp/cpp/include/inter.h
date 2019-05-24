@@ -12,15 +12,20 @@ class Stmt
 public:
     Stmt();
     virtual ~Stmt();
-    virtual std::string gen();
+    virtual std::string gen() const;
 };
 
 class Expr
 {
 public:
-    Expr(CompLexer::Token *op);
+    Expr(CompLexer::Token *op, int n_reg = 0);
     virtual ~Expr();
     virtual double calc(double *arg);
+    virtual std::string gen() const;
+    int n_reg() const;
+private:
+    int m_n_reg;
+protected:
     CompLexer::Token *m_op;
 };
 
@@ -30,6 +35,7 @@ public:
     Id(CompLexer::Token *w, unsigned long d);
     virtual ~Id();
     virtual double calc(double *arg);
+    virtual std::string gen() const;
 private:
     unsigned long m_offset;
 };
@@ -40,6 +46,7 @@ public:
     Constant(CompLexer::Token *op);
     virtual ~Constant();
     virtual double calc(double *);
+    virtual std::string gen() const;
 private:
     double m_val;
 };
@@ -47,7 +54,7 @@ private:
 class Op : public Expr
 {
 public:
-    Op(CompLexer::Token *op);
+    Op(CompLexer::Token *op, int n_reg = 0);
     virtual ~Op();
 };
 
@@ -57,6 +64,7 @@ public:
     Unary(CompLexer::Token *op, Expr *expr);
     virtual ~Unary();
     virtual double calc(double *arg);
+    virtual std::string gen() const;
 private:
     Expr *m_expr;
 };
@@ -67,9 +75,20 @@ public:
     Arith(CompLexer::Token *op, Expr *lexpr, Expr *rexpr);
     virtual ~Arith();
     virtual double calc(double *arg);
+    virtual std::string gen() const;
 private:
     Expr *m_lexpr;
     Expr *m_rexpr;
+};
+
+class Trig : public Op
+{
+public:
+    Trig(CompLexer::Token *op, Expr *expr);
+    virtual ~Trig();
+    virtual std::string gen() const;
+private:
+    Expr *m_expr;
 };
 
 class Call : public Op
