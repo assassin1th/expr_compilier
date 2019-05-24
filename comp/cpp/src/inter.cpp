@@ -3,8 +3,38 @@
 using namespace Inter;
 using CompLexer::Token;
 
+Stmt::Stmt()
+{
+}
+
+Stmt::~Stmt()
+{
+}
+
+std::string
+Stmt::gen() const
+{
+    return "";
+}
+
+FuncDecl::FuncDecl(Token *id):
+    Stmt(), m_id(id)
+{
+}
+
+FuncDecl::~FuncDecl()
+{
+}
+
+
+std::string
+FuncDecl::gen() const
+{
+    return m_id->val() + ":\n";
+}
+
 Expr::Expr(Token *op, int n_reg) :
-    m_op(op), m_n_reg(n_reg)
+    m_n_reg(n_reg), m_op(op)
 {
 }
 
@@ -18,18 +48,6 @@ Expr::n_reg() const
     return m_n_reg;
 }
 
-double
-Expr::calc(double *arg)
-{
-    return 0;
-}
-
-std::string
-Expr::gen() const
-{
-    return std::string("\n");
-}
-
 Id::Id(Token *w, unsigned long d) :
     Expr(w, 1), m_offset(d)
 {
@@ -37,12 +55,6 @@ Id::Id(Token *w, unsigned long d) :
 
 Id::~Id()
 {
-}
-
-double
-Id::calc(double *arg)
-{
-    return arg[m_offset / sizeof(double)];
 }
 
 std::string
@@ -76,17 +88,6 @@ Unary::gen() const
     return m_expr->gen();
 }
 
-double
-Unary::calc(double *arg)
-{
-    switch (m_op->tag())
-    {
-        case '-':
-            return -m_expr->calc(arg);
-        default:
-            return m_expr->calc(arg);
-    }
-}
 
 Arith::Arith(Token *op, Expr *lexpr, Expr *rexpr) :
     Op(op, MIN(lexpr->n_reg(), rexpr->n_reg()) + 1),
@@ -98,22 +99,6 @@ Arith::~Arith()
 {
     delete m_lexpr;
     delete m_rexpr;
-}
-
-double
-Arith::calc(double *arg)
-{
-    switch (m_op->tag())
-    {
-        case '+':
-            return m_lexpr->calc(arg) + m_rexpr->calc(arg);
-        case '-':
-            return m_lexpr->calc(arg) - m_rexpr->calc(arg);
-        case '*':
-            return m_lexpr->calc(arg) * m_rexpr->calc(arg);
-        case '/':
-            return m_lexpr->calc(arg) / m_rexpr->calc(arg);
-    }
 }
 
 std::string
@@ -160,11 +145,6 @@ Constant::~Constant()
 {
 }
 
-double
-Constant::calc(double *)
-{
-    return m_val;
-}
 std::string
 Constant::gen() const
 {
@@ -224,8 +204,8 @@ Call::~Call()
 {
 }
 
-double
-Call::calc(double *arg)
+std::string
+Call::gen() const
 {
-    return 0.0;
+    return "";
 }

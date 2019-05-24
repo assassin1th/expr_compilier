@@ -15,13 +15,24 @@ public:
     virtual std::string gen() const;
 };
 
-class Expr
+
+class FuncDecl : public Stmt
+{
+public:
+    FuncDecl(CompLexer::Token *id);
+    virtual ~FuncDecl();
+    virtual std::string gen() const;
+private:
+    CompLexer::Token *m_id;
+    Stmt *m_func_expr;
+};
+
+
+class Expr : public Stmt
 {
 public:
     Expr(CompLexer::Token *op, int n_reg = 0);
     virtual ~Expr();
-    virtual double calc(double *arg);
-    virtual std::string gen() const;
     int n_reg() const;
 private:
     int m_n_reg;
@@ -29,12 +40,12 @@ protected:
     CompLexer::Token *m_op;
 };
 
+
 class Id : public Expr
 {
 public:
     Id(CompLexer::Token *w, unsigned long d);
     virtual ~Id();
-    virtual double calc(double *arg);
     virtual std::string gen() const;
 private:
     unsigned long m_offset;
@@ -45,7 +56,6 @@ class Constant : public Expr
 public:
     Constant(CompLexer::Token *op);
     virtual ~Constant();
-    virtual double calc(double *);
     virtual std::string gen() const;
 private:
     double m_val;
@@ -63,7 +73,6 @@ class Unary : public Op
 public:
     Unary(CompLexer::Token *op, Expr *expr);
     virtual ~Unary();
-    virtual double calc(double *arg);
     virtual std::string gen() const;
 private:
     Expr *m_expr;
@@ -74,7 +83,6 @@ class Arith : public Op
 public:
     Arith(CompLexer::Token *op, Expr *lexpr, Expr *rexpr);
     virtual ~Arith();
-    virtual double calc(double *arg);
     virtual std::string gen() const;
 private:
     Expr *m_lexpr;
@@ -96,7 +104,7 @@ class Call : public Op
 public:
     Call(CompLexer::Token *op, std::vector<Expr *> &args);
     virtual ~Call();
-    virtual double calc(double *arg);
+    virtual std::string gen() const;
 private:
     std::vector<Expr *> m_args;
 };

@@ -14,14 +14,14 @@ Parser::Parser(Lexer *lex) :
     using CompLexer::Word;
     using CompLexer::Tag;
     m_lex->reserve(new Word(Tag::COS, "cos"), "cos");
-    m_lex->reserve(new Word(Tag::COS, "sin"), "sin");
-    m_lex->reserve(new Word(Tag::COS, "tan"), "tan");
-    m_lex->reserve(new Word(Tag::COS, "ctan"), "ctan");
-    m_lex->reserve(new Word(Tag::COS, "acos"), "acos");
-    m_lex->reserve(new Word(Tag::COS, "asin"), "asin");
-    m_lex->reserve(new Word(Tag::COS, "atan"), "atan");
-    m_lex->reserve(new Word(Tag::COS, "actan"), "actan");
-    m_lex->reserve(new Word(Tag::COS, "log"), "log");
+    m_lex->reserve(new Word(Tag::SIN, "sin"), "sin");
+    m_lex->reserve(new Word(Tag::TAN, "tan"), "tan");
+    m_lex->reserve(new Word(Tag::CTAN, "ctan"), "ctan");
+    m_lex->reserve(new Word(Tag::ACOS, "acos"), "acos");
+    m_lex->reserve(new Word(Tag::ASIN, "asin"), "asin");
+    m_lex->reserve(new Word(Tag::ATAN, "atan"), "atan");
+    m_lex->reserve(new Word(Tag::ACTAN, "actan"), "actan");
+    m_lex->reserve(new Word(Tag::LOG, "log"), "log");
     move();
 }
 
