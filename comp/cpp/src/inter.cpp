@@ -17,20 +17,21 @@ Stmt::gen() const
     return "";
 }
 
-FuncDecl::FuncDecl(Token *id):
-    Stmt(), m_id(id)
+FuncDecl::FuncDecl(Token *id, Stmt *func_expr):
+    Stmt(), m_id(id), m_func_expr(func_expr)
 {
 }
 
 FuncDecl::~FuncDecl()
 {
+    delete m_func_expr;
 }
 
 
 std::string
 FuncDecl::gen() const
 {
-    return m_id->val() + ":\n";
+    return m_id->val() + ":\n" + m_func_expr->gen();
 }
 
 Expr::Expr(Token *op, int n_reg) :
@@ -60,7 +61,7 @@ Id::~Id()
 std::string
 Id::gen() const
 {
-    return "FLD [ECX - " + std::to_string(m_offset) + "]\n";
+    return "\tFLD [ECX - " + std::to_string(m_offset) + "]\n";
 }
 
 Op::Op(Token *op, int n_reg) :
@@ -104,7 +105,7 @@ Arith::~Arith()
 std::string
 Arith::gen() const
 {
-    std::string res("");
+    std::string res("\t");
     switch (m_op->tag())
     {
         case '+':
@@ -127,12 +128,11 @@ Arith::gen() const
             break;
     }
 
-    if (m_lexpr->n_reg() > m_rexpr->n_reg())
+    if (m_lexpr->n_reg() < m_rexpr->n_reg())
     {
-        return m_lexpr->gen() + m_rexpr->gen() + res + "\n";
+        return m_rexpr->gen() + m_lexpr->gen() + res + "R\n";
     }
-
-    return m_rexpr->gen() + m_lexpr->gen() + res + "R\n";
+    return m_lexpr->gen() + m_rexpr->gen() + res + "\n";
 }
 
 
@@ -148,7 +148,7 @@ Constant::~Constant()
 std::string
 Constant::gen() const
 {
-    return "FLD " + std::to_string(m_val) + "\n";
+    return "\tFLD " + std::to_string(m_val) + "\n";
 }
 
 Trig::Trig(CompLexer::Token *op, Expr *expr):
@@ -158,23 +158,24 @@ Trig::Trig(CompLexer::Token *op, Expr *expr):
 
 Trig::~Trig()
 {
+    delete m_expr;
 }
 
 std::string
 Trig::gen() const
 {
     using CompLexer::Tag;
-    std::string res("");
+    std::string res("\t");
     switch (m_op->tag())
     {
         case Tag::COS:
-            res += "FCOS\n";
+            res += "FCOS";
             break;
         case Tag::SIN:
-            res += "FSIN\n";
+            res += "FSIN";
             break;
         case Tag::TAN:
-            res += "FTAN\n";
+            res += "FTAN";
             break;
         case Tag::CTAN:
             res += "FCTAN";

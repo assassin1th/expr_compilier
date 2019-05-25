@@ -19,7 +19,7 @@ public:
 class FuncDecl : public Stmt
 {
 public:
-    FuncDecl(CompLexer::Token *id);
+    FuncDecl(CompLexer::Token *id, Stmt *func_expr);
     virtual ~FuncDecl();
     virtual std::string gen() const;
 private:

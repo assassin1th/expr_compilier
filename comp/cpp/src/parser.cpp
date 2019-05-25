@@ -9,7 +9,7 @@ using Inter::Expr;
 using Inter::Id;
 
 Parser::Parser(Lexer *lex) :
-    m_lex(lex), m_env(new Env)
+    m_lex(lex), m_env(new Env), m_used(0)
 {
     using CompLexer::Word;
     using CompLexer::Tag;
@@ -45,21 +45,22 @@ Parser::match(int tag)
         move();
     } else {
         std::cerr << "error: expeted" << tag << std::endl;
+        std::cerr << "recieved - " << m_look->tag() << std::endl;
+        std::cerr << m_look->val() << std::endl;
     }
 }
 
-Expr *
+Inter::Stmt *
 Parser::parse()
 {
-    func();
-    match('=');
-    return expr();
+    return func();
 }
 
-void
+Inter::Stmt *
 Parser::func()
 {
     using CompLexer::Tag;
+    Token *id = m_look;
     match(Tag::ID);
     match('(');
     if (m_look->tag() != ')')
@@ -71,8 +72,8 @@ Parser::func()
                 {
                     std::cerr << "used: " << m_look->val() << std::endl;
                 } else {
-                    m_env->set(m_look, new Id(m_look, used));
-                    used += sizeof(double);
+                    m_env->set(m_look, new Id(m_look, m_used));
+                    m_used += sizeof(double);
                 }
                 move();
             }
@@ -85,6 +86,8 @@ Parser::func()
         } while (true);
     }
     move();
+    match('=');
+    return new Inter::FuncDecl(id, expr());
 }
 
 Expr *
@@ -123,10 +126,46 @@ Parser::unary()
     {
         Token *tok = m_look;
         move();
-        return (new Unary(tok, unary()));
+        return (new Unary(tok, trig()));
     } else {
-        return factor();
+        return trig();
     }
+}
+
+Expr *
+Parser::trig()
+{
+    using Inter::Trig;
+    using CompLexer::Tag;
+    Expr *x = nullptr;
+    Token *id = nullptr;
+    switch (m_look->tag())
+    {
+        case Tag::COS: case Tag::SIN: case Tag::TAN:
+        case Tag::CTAN: case Tag::ASIN: case Tag::ACOS:
+        case Tag::ATAN: case Tag::ACTAN:
+            id = m_look;
+            move();
+            match('(');
+            x = expr();
+            match(')');
+            return new Trig(id, x);
+    }
+    return power();
+}
+
+Expr *
+Parser::power()
+{
+    using Inter::Arith;
+    Expr *x = factor();
+    while (m_look->tag() == '^')
+    {
+        Token *tok = m_look;
+        move();
+        x = new Arith(tok, x, power());
+    }
+    return x;
 }
 
 Expr *
