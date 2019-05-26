@@ -141,15 +141,7 @@ Parser::trig()
     Token *id = nullptr;
     switch (m_look->tag())
     {
-        case Tag::COS: case Tag::SIN: case Tag::TAN:
-        case Tag::CTAN: case Tag::ASIN: case Tag::ACOS:
-        case Tag::ATAN: case Tag::ACTAN:
-            id = m_look;
-            move();
-            match('(');
-            x = expr();
-            match(')');
-            return new Trig(id, x);
+
     }
     return power();
 }
@@ -173,7 +165,11 @@ Parser::factor()
 {
     using CompLexer::Tag;
     using Inter::Constant;
+    using Inter::Trig;
+    using Inter::Arith;
+
     Expr *x = nullptr;
+    Token *id = nullptr;
     switch (m_look->tag())
     {
         case Tag::REAL:
@@ -183,6 +179,23 @@ Parser::factor()
         case '(':
             move();
             x = expr();
+            match(')');
+            return x;
+        case Tag::COS: case Tag::SIN: case Tag::TAN:
+        case Tag::CTAN: case Tag::ASIN: case Tag::ACOS:
+        case Tag::ATAN: case Tag::ACTAN:
+            id = m_look;
+            move();
+            match('(');
+            x = new Trig(id, x);
+            match(')');
+            return x;
+        case Tag::LOG:
+            id = m_look;
+            match('(');
+            x = expr();
+            match(',');
+            x = new Arith(id, x, expr());
             match(')');
             return x;
         case Tag::ID:

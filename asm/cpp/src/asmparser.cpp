@@ -1,23 +1,86 @@
+#include <iostream>
 #include "vm/c/include/cmd.h"
 #include "vm/c/include/registers.h"
 #include "asm/cpp/include/asmparser.h"
 #include "asm/cpp/include/asminter.h"
 #include "asm/cpp/include/asmlexer.h"
+#define LEX_RESERVE_WORD(lex, tag, key) (lex->reserve(new Word(tag, key), key))
 
-AsmParser::AsmParser(Lexer *lex) :
-    Parser(lex)
+using namespace AsmParser;
+using Inter::Stmt;
+
+Parser::Parser(CompLexer::Lexer *lex) :
+    m_lex(lex)
 {
+    using CompLexer::Word;
+    using AsmLexer::Tag;
+    // Arith cmds
+    LEX_RESERVE_WORD(lex, Tag::SUB, "FSUB");
+    LEX_RESERVE_WORD(lex, Tag::SUBR, "FSUBR");
+    LEX_RESERVE_WORD(lex, Tag::SUM, "FSUM");
+    LEX_RESERVE_WORD(lex, Tag::SUMR, "FSUMR");
+    LEX_RESERVE_WORD(lex, Tag::DIV, "FDIV");
+    LEX_RESERVE_WORD(lex, Tag::DIVR, "DIVR");
+    LEX_RESERVE_WORD(lex, Tag::MUL, "FMUL");
+    LEX_RESERVE_WORD(lex, Tag::MULR, "FMULR");
+    LEX_RESERVE_WORD(lex, Tag::LOG, "FLOG");
+    LEX_RESERVE_WORD(lex, Tag::LOGR, "FLOGR");
+    LEX_RESERVE_WORD(lex, Tag::POW, "FPOW");
+    LEX_RESERVE_WORD(lex, Tag::POWR, "FPOWR");
+    // Trig cmds
+    LEX_RESERVE_WORD(lex, Tag::SIN, "SIN");
+    LEX_RESERVE_WORD(lex, Tag::COS, "COS");
+    LEX_RESERVE_WORD(lex, Tag::TAN, "TAN");
+    LEX_RESERVE_WORD(lex, Tag::CTAN, "CTAN");
+    LEX_RESERVE_WORD(lex, Tag::ASIN, "ASIN");
+    LEX_RESERVE_WORD(lex, Tag::ACOS, "ACOS");
+    LEX_RESERVE_WORD(lex, Tag::ATAN, "ATAN");
+    LEX_RESERVE_WORD(lex, Tag::ACTAN, "ACTAN");
+    // Other cmds
+    LEX_RESERVE_WORD(lex, Tag::END, "END");
+    LEX_RESERVE_WORD(lex, Tag::FLD, "FLD");
+    LEX_RESERVE_WORD(lex, Tag::RET, "RET");
+    LEX_RESERVE_WORD(lex, Tag::PUSH, "PUSH");
+    LEX_RESERVE_WORD(lex, Tag::CALL, "POP");
+    move();
 }
 
-
-AsmParser::~AsmParser()
+Parser::~Parser()
 {
+    delete m_lex;
+}
+
+void
+Parser::move()
+{
+    m_look = m_lex->scan();
+}
+
+void
+Parser::match(int tag)
+{
+    if (m_look->tag() == tag)
+    {
+        move();
+    }
+    else
+    {
+        std::cerr << "unexpected sym" << std::endl;
+    }
 }
 
 Stmt *
-AsmParser::stmts()
+Parser::parse()
 {
-    if (look->tag() == '\0')
+    Stmt *x = label();
+}
+
+Stmt *
+Parser::stmts()
+{
+    using AsmInter::Seq;
+
+    if (m_look->tag() == '\0')
     {
         return new Stmt();
     }
@@ -28,96 +91,7 @@ AsmParser::stmts()
 }
 
 Stmt *
-AsmParser::stmt()
+Parser::stmt()
 {
-    switch (look->tag())
-    {
-        case MnemonicTag::SUM:
-        {
-            arith_cmd_t cmd = {.id = FSUM, .mode_flag = 0};
-            return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-        }
-        case MnemonicTag::SUMR:
-    {
-        arith_cmd_t cmd = {.id = FSUM, .mode_flag = 1};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::SUB:
-    {
-        arith_cmd_t cmd = {.id = FSUB, .mode_flag = 0};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::SUBR:
-    {
-        arith_cmd_t cmd = {.id = FSUB, .mode_flag = 1};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::MUL:
-    {
-        arith_cmd_t cmd = {.id = FMUL, .mode_flag = 0};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::MULR:
-    {
-        arith_cmd_t cmd = {.id = FMUL, .mode_flag = 1};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::DIV:
-    {
-        arith_cmd_t cmd = {.id = FDIV, .mode_flag = 0};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::DIVR:
-    {
-        arith_cmd_t cmd = {.id = FDIV, .mode_flag = 1};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::POW:
-    {
-        arith_cmd_t cmd = {.id = FPOW, .mode_flag = 0};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::POWR:
-    {
-        arith_cmd_t cmd = {.id = FPOW, .mode_flag = 1};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::LOG:
-    {
-        arith_cmd_t cmd = {.id = FLOG, .mode_flag = 0};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::LOGR:
-    {
-        arith_cmd_t cmd = {.id = FLOG, .mode_flag = 1};
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    }
-        case MnemonicTag::SIN:
-            break;
-        case MnemonicTag::COS:
-            break;
-        case MnemonicTag::TAN:
-            break;
-        case MnemonicTag::CTAN:
-            break;
-        case MnemonicTag::ASIN:
-            break;
-        case MnemonicTag::ACOS:
-            break;
-        case MnemonicTag::ATAN:
-            break;
-        case MnemonicTag::ACT:
-            break;
-        case MnemonicTag::FLD:
-            break;
-        case MnemonicTag::RET:
-            break;
-        case MnemonicTag::PUSH:
-            break;
-        case MnemonicTag::POP:
-            break;
-        case MnemonicTag::CALL:
-            break;
-    }
-    return new Stmt();
+    return x;
 }

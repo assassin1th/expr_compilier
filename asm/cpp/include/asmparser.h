@@ -3,14 +3,24 @@
 
 #include "comp/cpp/include/parser.h"
 
-class AsmParser : Parser
+namespace AsmParser {
+
+class Parser
 {
 public:
-    AsmParser(Lexer *lex);
-    ~AsmParser();
+    Parser(CompLexer::Lexer *lex);
+    ~Parser();
+    Inter::Stmt *parse();
 private:
-    Stmt *stmts();
-    Stmt *stmt();
+    void move();
+    void match(int tag);
+    CompLexer::Token *m_look;
+    CompLexer::Lexer *m_lex;
+    Inter::Stmt *stmts();
+    Inter::Stmt *stmt();
+    Inter::Stmt *cmd();
+    Inter::Stmt *label();
 };
 
+}
 #endif // ASMPARSER_H_

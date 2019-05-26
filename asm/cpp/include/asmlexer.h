@@ -3,21 +3,24 @@
 
 #include "comp/cpp/include/lexer.h"
 
-enum MnemonicTag
+namespace AsmLexer {
+
+enum Tag
 {
-    END = Tag::REAL + 1, SUB, SUBR, SUM, SUMR, MUL,
+    END = CompLexer::Tag::REAL + 1, SUB, SUBR, SUM, SUMR, MUL,
     MULR, DIV, DIVR, POW, POWR, LOG, LOGR, SIN,
-    COS, TAN, CTAN, ASIN, ACOS, ATAN, ACT, FLD,
+    COS, TAN, CTAN, ASIN, ACOS, ATAN, ACTAN, FLD,
     RET, PUSH, POP, CALL
 };
 
-class AsmLexer : public Lexer
+class Lexer : public CompLexer::Lexer
 {
 public:
-    AsmLexer(const std::string src);
-    ~AsmLexer();
+    Lexer(const std::string &src);
+    ~Lexer();
 private:
 
 };
 
+}
 #endif // ASMLEXER_H_
