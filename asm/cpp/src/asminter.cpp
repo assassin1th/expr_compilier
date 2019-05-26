@@ -79,7 +79,7 @@ HeaderLable::gen() const
     return "\t" + m_tok->val() + "H\n";
 }
 
-LabelSeq::LabelSeq(Label *lbl) :
+LabelSeq::LabelSeq(Stmt *lbl) :
     m_lbl(lbl), m_seq(nullptr)
 {
 }
@@ -104,7 +104,7 @@ LabelSeq::gen() const
 }
 
 void
-LabelSeq::push_label(Label *lbl)
+LabelSeq::push_label(Stmt *lbl)
 {
     if (m_seq)
     {
@@ -115,3 +115,42 @@ LabelSeq::push_label(Label *lbl)
         m_seq = new LabelSeq(lbl);
     }
 }
+
+Obj::Obj(Stmt *stmt, LabelSeq *lbl_seq) :
+    m_stmt(stmt), m_lbl_seq(lbl_seq)
+{
+}
+
+Obj::~Obj()
+{
+    delete m_lbl_seq;
+    delete m_stmt;
+}
+
+std::string
+Obj::gen() const
+{
+    return m_lbl_seq->gen() + m_stmt->gen();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

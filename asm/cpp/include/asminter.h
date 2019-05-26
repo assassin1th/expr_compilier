@@ -55,13 +55,25 @@ public:
 class LabelSeq : public Inter::Stmt
 {
 public:
-    LabelSeq(Label *lbl);
+    LabelSeq(Stmt *lbl);
     virtual ~LabelSeq();
     virtual std::string gen() const;
-    void push_label(Label *lbl);
+    void push_label(Stmt *lbl);
 private:
-    Label *m_lbl;
+    Stmt *m_lbl;
     LabelSeq *m_seq;
+};
+
+
+class Obj : public Inter::Stmt
+{
+public:
+    Obj(Stmt *stmt, LabelSeq *lbl_seq);
+    virtual ~Obj();
+    virtual std::string gen() const;
+private:
+    Stmt *m_stmt;
+    LabelSeq *m_lbl_seq;
 };
 
 }

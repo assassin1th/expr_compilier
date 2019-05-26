@@ -41,7 +41,8 @@ Parser::Parser(CompLexer::Lexer *lex) :
     LEX_RESERVE_WORD(lex, Tag::FLD, "FLD");
     LEX_RESERVE_WORD(lex, Tag::RET, "RET");
     LEX_RESERVE_WORD(lex, Tag::PUSH, "PUSH");
-    LEX_RESERVE_WORD(lex, Tag::CALL, "POP");
+    LEX_RESERVE_WORD(lex, Tag::CALL, "CALL");
+    LEX_RESERVE_WORD(lex, Tag::POP, "POP");
     move();
 }
 
@@ -72,7 +73,29 @@ Parser::match(int tag)
 Stmt *
 Parser::parse()
 {
-    Stmt *x = label();
+    using AsmInter::LabelSeq;
+    using AsmInter::Obj;
+    m_lbl_seq = new LabelSeq(label());
+    return new Obj(stmts(), m_lbl_seq);
+}
+
+Stmt *
+Parser::label()
+{
+    using CompLexer::Token;
+    using CompLexer::Tag;
+    using AsmInter::HeaderLable;
+    using AsmInter::UndefLabel;
+
+    Token *id = m_look;
+    match(Tag::ID);
+    if (m_look->tag() == ':')
+    {
+        move();
+        return new HeaderLable(id);
+    }
+    move();
+    return new UndefLabel(id);
 }
 
 Stmt *
@@ -93,5 +116,5 @@ Parser::stmts()
 Stmt *
 Parser::stmt()
 {
-    return x;
+    return new Stmt();
 }
