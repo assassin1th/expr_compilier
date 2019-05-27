@@ -50,7 +50,7 @@ typedef struct
     uint8_t id:5;
     uint8_t src_mode:1;
     uint8_t data_type:2;
-    uint8_t offset[0];
+    uint8_t offset[sizeof (uint16_t)];
 } ld_cmd_mem_t;
 
 typedef struct

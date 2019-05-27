@@ -40,7 +40,6 @@ protected:
     CompLexer::Token *m_op;
 };
 
-
 class Id : public Expr
 {
 public:

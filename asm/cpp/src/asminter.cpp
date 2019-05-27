@@ -130,11 +130,8 @@ Obj::~Obj()
 std::string
 Obj::gen() const
 {
-    return m_lbl_seq->gen() + m_stmt->gen();
+    return "SYMTAB:" + m_lbl_seq->gen() + "\n" + m_stmt->gen();
 }
-
-
-
 
 
 

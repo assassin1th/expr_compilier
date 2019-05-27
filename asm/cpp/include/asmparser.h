@@ -17,10 +17,15 @@ private:
     CompLexer::Token *m_look;
     CompLexer::Lexer *m_lex;
     AsmInter::LabelSeq *m_lbl_seq;
+    Symbols::Env *m_env;
     Inter::Stmt *stmts();
     Inter::Stmt *stmt();
-    Inter::Stmt *cmd();
     Inter::Stmt *label();
+    Inter::Stmt *arith_cmd();
+    Inter::Stmt *trig_cmd();
+    Inter::Stmt *ld_cmd();
+    Inter::Stmt *call_cmd();
+    Inter::Stmt *cmd();
 };
 
 }

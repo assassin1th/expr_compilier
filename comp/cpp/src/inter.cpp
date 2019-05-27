@@ -61,7 +61,7 @@ Id::~Id()
 std::string
 Id::gen() const
 {
-    return "\tFLD [ECX - " + std::to_string(m_offset) + "]\n";
+    return "\tFLD [-" + std::to_string(m_offset) + "]\n";
 }
 
 Op::Op(Token *op, int n_reg) :
@@ -169,28 +169,28 @@ Trig::gen() const
     switch (m_op->tag())
     {
         case Tag::COS:
-            res += "FCOS";
+            res += "FCOS ST0";
             break;
         case Tag::SIN:
-            res += "FSIN";
+            res += "FSIN ST0";
             break;
         case Tag::TAN:
-            res += "FTAN";
+            res += "FTAN ST0";
             break;
         case Tag::CTAN:
-            res += "FCTAN";
+            res += "FCTAN ST0";
             break;
         case Tag::ACOS:
-            res += "FACOS";
+            res += "FACOS ST0";
             break;
         case Tag::ASIN:
-            res += "FASIN";
+            res += "FASIN ST0";
             break;
         case Tag::ATAN:
-            res += "FATAN";
+            res += "FATAN ST0";
             break;
         case Tag::ACTAN:
-            res += "FACTAN";
+            res += "FACTAN ST0";
             break;
     }
     return m_expr->gen() + res + "\n";
