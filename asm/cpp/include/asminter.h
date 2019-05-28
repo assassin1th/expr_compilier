@@ -19,11 +19,11 @@ private:
 class Cmd : public Inter::Stmt
 {
 public:
-    Cmd(const std::string &opcode);
+    Cmd(CompLexer::Token *tok);
     virtual ~Cmd();
     virtual std::string gen() const;
-private:
-    std::string m_opcode;
+protected:
+    CompLexer::Token *m_tok;
 };
 
 class Label : public Inter::Stmt
@@ -74,6 +74,43 @@ public:
 private:
     Stmt *m_stmt;
     LabelSeq *m_lbl_seq;
+};
+
+class Reg : public Inter::Id
+{
+public:
+    Reg(CompLexer::Token *tok, unsigned long offset);
+    virtual ~Reg();
+    unsigned long val() const;
+};
+
+class ArithCmd : public Cmd
+{
+public:
+    ArithCmd(CompLexer::Token *tok);
+    virtual ~ArithCmd();
+    virtual std::string gen() const;
+};
+
+class TrigCmd : public Cmd
+{
+public:
+    TrigCmd(CompLexer::Token *tok, Reg *reg);
+    virtual ~TrigCmd();
+    virtual std::string gen() const;
+private:
+    Reg *m_reg;
+};
+
+class LoadCmd : public Cmd
+{
+public:
+    LoadCmd(CompLexer::Token *tok, unsigned int mode);
+    virtual ~LoadCmd();
+    virtual std::string gen() const;
+private:
+    Stmt *m_offset_stmt;
+    unsigned int m_mode;
 };
 
 }

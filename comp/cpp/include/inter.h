@@ -46,7 +46,7 @@ public:
     Id(CompLexer::Token *w, unsigned long d);
     virtual ~Id();
     virtual std::string gen() const;
-private:
+protected:
     unsigned long m_offset;
 };
 
