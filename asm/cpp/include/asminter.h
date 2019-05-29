@@ -113,6 +113,15 @@ private:
     unsigned int m_mode;
 };
 
+class PushCmd : public LoadCmd
+{
+public:
+};
+
+class FldCmd : public LoadCmd
+{
+};
+
 }
 
 #endif // ASMINTER_H_

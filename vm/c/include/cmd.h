@@ -10,6 +10,11 @@ enum cmd
     RET, PUSH_REG, POP, CALL, FLD_MEM, PUSH_MEM, FLD_REAL, PUSH_REAL
 };
 
+enum LoadMode
+{
+    REG, MEM, REAL
+};
+
 typedef struct
 {
     uint8_t id:5;

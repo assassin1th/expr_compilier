@@ -183,6 +183,58 @@ ArithCmd::gen() const
 {
     using AsmLexer::Tag;
 
+    arith_cmd_t cmd =
+    {
+        .id = 0,
+        .mode_flag = 0
+    };
+
+    switch (m_tok->tag())
+    {
+    case Tag::SUM:
+        cmd.id = cmd::FSUM;
+        break;
+    case Tag::SUMR:
+        cmd.id = cmd::FSUM;
+        cmd.mode_flag = 1;
+        break;
+    case Tag::SUB:
+        cmd.id = cmd::FSUB;
+        break;
+    case Tag::SUBR:
+        cmd.id = cmd::FSUB;
+        cmd.mode_flag = 1;
+        break;
+    case Tag::DIV:
+        cmd.id = cmd::FDIV;
+        break;
+    case Tag::DIVR:
+        cmd.id = cmd::FDIV;
+        cmd.mode_flag = 1;
+        break;
+    case Tag::MUL:
+        cmd.id = cmd::FMUL;
+        break;
+    case Tag::MULR:
+        cmd.id = cmd::FMUL;
+        cmd.mode_flag = 1;
+        break;
+    case Tag::LOG:
+        cmd.id = cmd::FLOG;
+        break;
+    case Tag::LOGR:
+        cmd.id = cmd::FLOG;
+        cmd.mode_flag = 1;
+        break;
+    case Tag::POW:
+        cmd.id = cmd::FPOW;
+        break;
+    case Tag::POWR:
+        cmd.id = cmd::FPOW;
+        cmd.mode_flag = 1;
+        break;
+    }
+    return std::string((char *) &cmd, sizeof (cmd));
 }
 
 TrigCmd::TrigCmd(CompLexer::Token *tok, Reg *reg) :
@@ -192,6 +244,7 @@ TrigCmd::TrigCmd(CompLexer::Token *tok, Reg *reg) :
 
 TrigCmd::~TrigCmd()
 {
+    delete m_reg;
 }
 
 std::string
@@ -236,11 +289,20 @@ TrigCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
+LoadCmd::LoadCmd(CompLexer::Token *tok, unsigned int mode) :
+    Cmd(tok), m_mode(mode)
+{
+}
 
+LoadCmd::~LoadCmd()
+{
+    delete m_offset_stmt;
+}
 
-
-
-
+std::string
+LoadCmd::gen() const
+{
+}
 
 
 
