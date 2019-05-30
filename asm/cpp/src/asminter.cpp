@@ -289,35 +289,136 @@ TrigCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-LoadCmd::LoadCmd(CompLexer::Token *tok, unsigned int mode) :
-    Cmd(tok), m_mode(mode)
+Expr::Expr(CompLexer::Token *tok) :
+    m_tok(tok)
 {
 }
 
-LoadCmd::~LoadCmd()
+Expr::~Expr()
 {
-    delete m_offset_stmt;
 }
 
 std::string
-LoadCmd::gen() const
+Expr::gen() const
+{
+    return m_tok->val();
+}
+
+Real::Real(CompLexer::Token *tok) :
+    Expr(tok)
 {
 }
 
+Real::~Real()
+{
+}
 
+double
+Real::val() const
+{
+    return std::stod(gen());
+}
 
+Offset::Offset(CompLexer::Token *tok, Expr *offset_expr) :
+    Expr(tok), m_offset_expr(offset_expr)
+{
+}
 
+Offset::~Offset()
+{
+    delete m_offset_expr;
+}
 
+int16_t
+Offset::val() const
+{
+    if (m_tok->tag() == '-')
+    {
+        return -std::stoi(m_offset_expr->gen());
+    }
+    else
+    {
+        return std::stoi(m_offset_expr->gen());
+    }
+}
 
+LoadRegCmd::LoadRegCmd(CompLexer::Token *tok, Reg *reg) :
+    Cmd(tok), m_reg(reg)
+{
+}
 
+LoadRegCmd::~LoadRegCmd()
+{
+    delete  m_reg;
+}
 
+std::string
+LoadRegCmd::gen() const
+{
+    using AsmLexer::Tag;
+    ld_cmd_reg_t cmd;
+    cmd.reg = m_reg->val();
+    if (m_tok->tag() == Tag::PUSH)
+    {
+        cmd.id = cmd::PUSH_REG;
+    }
+    else
+    {
+        cmd.id = cmd::FLD_REG;
+    }
+    return std::string((char *) &cmd, sizeof (cmd));
+}
 
+LoadMemCmd::LoadMemCmd(CompLexer::Token *tok, Offset *offset) :
+    Cmd(tok), m_offset(offset)
+{
+}
 
+LoadMemCmd::~LoadMemCmd()
+{
+    delete m_offset;
+}
 
+std::string
+LoadMemCmd::gen() const
+{
+    using AsmLexer::Tag;
+    ld_cmd_mem_t cmd;
+    *(int16_t *) cmd.offset = m_offset->val();
+    if (m_tok->tag() == Tag::PUSH)
+    {
+        cmd.id = cmd::PUSH_MEM;
+    }
+    else
+    {
+        cmd.id = cmd::FLD_MEM;
+    }
+    return std::string((char *) &cmd, sizeof (cmd));
+}
 
+LoadRealCmd::LoadRealCmd(CompLexer::Token *tok, Real *constant) :
+    Cmd(tok), m_const(constant)
+{
+}
 
+LoadRealCmd::~LoadRealCmd()
+{
+    delete m_const;
+}
 
-
-
-
-
+std::string
+LoadRealCmd::gen() const
+{
+    using AsmLexer::Tag;
+    ld_cmd_real_t cmd;
+    *(double *) cmd.real = m_const->val();
+    if (m_tok->tag() == Tag::PUSH)
+    {
+        cmd.id = cmd::PUSH_REAL;
+    }
+    else
+    {
+        cmd.id = cmd::FLD_REAL;
+    }
+    return std::string((char *) &cmd, sizeof (cmd));
+}

@@ -16,6 +16,24 @@ private:
     Stmt *m_stmt2;
 };
 
+class Expr : public Inter::Stmt
+{
+public:
+    Expr(CompLexer::Token *tok);
+    virtual ~Expr();
+    virtual std::string gen() const;
+protected:
+    CompLexer::Token *m_tok;
+};
+
+class Real : public Expr
+{
+public:
+    Real(CompLexer::Token *tok);
+    virtual ~Real();
+    double val() const;
+};
+
 class Cmd : public Inter::Stmt
 {
 public:
@@ -84,6 +102,16 @@ public:
     unsigned long val() const;
 };
 
+class Offset : public Expr
+{
+public:
+    Offset(CompLexer::Token *tok, Expr *offset_expr);
+    virtual ~Offset();
+    int16_t val() const;
+private:
+    Expr *m_offset_expr;
+};
+
 class ArithCmd : public Cmd
 {
 public:
@@ -102,24 +130,33 @@ private:
     Reg *m_reg;
 };
 
-class LoadCmd : public Cmd
+class LoadRegCmd : public Cmd
 {
 public:
-    LoadCmd(CompLexer::Token *tok, unsigned int mode);
-    virtual ~LoadCmd();
+    LoadRegCmd(CompLexer::Token *tok, Reg *reg);
+    virtual ~LoadRegCmd();
     virtual std::string gen() const;
 private:
-    Stmt *m_offset_stmt;
-    unsigned int m_mode;
+    Reg *m_reg;
 };
-
-class PushCmd : public LoadCmd
+class LoadMemCmd : public Cmd
 {
 public:
+    LoadMemCmd(CompLexer::Token *tok, Offset *offset);
+    virtual ~LoadMemCmd();
+    virtual std::string gen() const;
+private:
+    Offset *m_offset;
 };
 
-class FldCmd : public LoadCmd
+class LoadRealCmd : public Cmd
 {
+public:
+    LoadRealCmd(CompLexer::Token *tok, Real *constant);
+    virtual ~LoadRealCmd();
+    virtual std::string gen() const;
+private:
+    Real *m_const;
 };
 
 }
