@@ -19,6 +19,50 @@ Seq::gen() const
     return m_stmt1->gen() + m_stmt2->gen();
 }
 
+Expr::Expr()
+{
+}
+
+Expr::~Expr()
+{
+}
+
+std::string
+Expr::gen() const
+{
+    return std::string("");
+}
+
+Op::Op(CompLexer::Token *tok) :
+    m_tok(tok)
+{
+}
+
+Op::~Op()
+{
+}
+
+std::string
+Op::gen() const
+{
+    return m_tok->val();
+}
+
+Real::Real(CompLexer::Token *tok) :
+    Op(tok)
+{
+}
+
+Real::~Real()
+{
+}
+
+double
+Real::val() const
+{
+    return std::stod(gen());
+}
+
 Cmd::Cmd(CompLexer::Token *tok) :
     Stmt(), m_tok(tok)
 {
@@ -154,8 +198,8 @@ Obj::gen() const
     return "SYMTAB:" + m_lbl_seq->gen() + "\n" + m_stmt->gen();
 }
 
-Reg::Reg(CompLexer::Token *tok, unsigned long offset) :
-    Inter::Id(tok, offset)
+Reg::Reg(CompLexer::Token *tok) :
+    Op(tok)
 {
 }
 
@@ -166,7 +210,45 @@ Reg::~Reg()
 unsigned long
 Reg::val() const
 {
-    return m_offset;
+    return std::stoul(gen());
+}
+
+Offset::Offset(Expr *offset_expr) :
+    m_offset_expr(offset_expr)
+{
+}
+
+Offset::~Offset()
+{
+    delete m_offset_expr;
+}
+
+int16_t
+Offset::val() const
+{
+    return stoi(gen());
+}
+
+std::string
+Offset::gen() const
+{
+    return m_offset_expr->gen();
+}
+
+UnaryOffset::UnaryOffset(CompLexer::Token *tok, Offset *offset_expr) :
+    Op(tok), Offset(offset_expr)
+{
+}
+
+UnaryOffset::~UnaryOffset()
+{
+    delete m_offset_expr;
+}
+
+int16_t
+UnaryOffset::val() const
+{
+    return -std::stoi(m_offset_expr->gen());
 }
 
 ArithCmd::ArithCmd(CompLexer::Token *tok) :
@@ -287,59 +369,6 @@ TrigCmd::gen() const
     }
     cmd.r = m_reg->val();
     return std::string((char *) &cmd, sizeof (cmd));
-}
-
-Expr::Expr(CompLexer::Token *tok) :
-    m_tok(tok)
-{
-}
-
-Expr::~Expr()
-{
-}
-
-std::string
-Expr::gen() const
-{
-    return m_tok->val();
-}
-
-Real::Real(CompLexer::Token *tok) :
-    Expr(tok)
-{
-}
-
-Real::~Real()
-{
-}
-
-double
-Real::val() const
-{
-    return std::stod(gen());
-}
-
-Offset::Offset(CompLexer::Token *tok, Expr *offset_expr) :
-    Expr(tok), m_offset_expr(offset_expr)
-{
-}
-
-Offset::~Offset()
-{
-    delete m_offset_expr;
-}
-
-int16_t
-Offset::val() const
-{
-    if (m_tok->tag() == '-')
-    {
-        return -std::stoi(m_offset_expr->gen());
-    }
-    else
-    {
-        return std::stoi(m_offset_expr->gen());
-    }
 }
 
 LoadRegCmd::LoadRegCmd(CompLexer::Token *tok, Reg *reg) :

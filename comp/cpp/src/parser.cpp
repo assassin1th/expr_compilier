@@ -126,24 +126,10 @@ Parser::unary()
     {
         Token *tok = m_look;
         move();
-        return (new Unary(tok, trig()));
+        return (new Unary(tok, unary()));
     } else {
-        return trig();
+        return power();
     }
-}
-
-Expr *
-Parser::trig()
-{
-    using Inter::Trig;
-    using CompLexer::Tag;
-    Expr *x = nullptr;
-    Token *id = nullptr;
-    switch (m_look->tag())
-    {
-
-    }
-    return power();
 }
 
 Expr *

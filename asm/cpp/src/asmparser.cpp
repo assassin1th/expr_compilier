@@ -132,69 +132,16 @@ Stmt *
 Parser::arith_cmd()
 {
     using AsmLexer::Tag;
-    using AsmInter::Cmd;
-    arith_cmd_t cmd =
-    {
-        .id = 0,
-        .mode_flag = 0
-    };
-
+    using AsmInter::ArithCmd;
+    Stmt *x = nullptr;
     switch (m_look->tag())
     {
-    case Tag::SUM:
-        cmd.id = cmd::FSUM;
-        move();
-        return new AsmInter::Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::SUMR:
-        cmd.id = cmd::FSUM;
-        cmd.mode_flag = 1;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::SUB:
-        cmd.id = cmd::FSUB;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::SUBR:
-        cmd.id = cmd::FSUB;
-        cmd.mode_flag = 1;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::MUL:
-        cmd.id = cmd::FMUL;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::MULR:
-        cmd.id = cmd::FMUL;
-        cmd.mode_flag = 1;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::DIV:
-        cmd.id = cmd::FDIV;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::DIVR:
-        cmd.id = cmd::FDIV;
-        cmd.mode_flag = 1;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::LOG:
-        cmd.id = cmd::FLOG;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::LOGR:
-        cmd.id = cmd::FLOG;
-        cmd.mode_flag = 1;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::POW:
-        cmd.id = cmd::FPOW;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
-    case Tag::POWR:
-        cmd.id = cmd::FPOW;
-        cmd.mode_flag = 1;
-        move();
-        return new Cmd(std::string((char *) &cmd, sizeof (arith_cmd_t)));
+        case Tag::SUM: case Tag::SUMR: case Tag::SUB: case Tag::SUBR:
+        case Tag::MUL: case Tag::MULR: case Tag::DIV: case Tag::DIVR:
+        case Tag::LOG: case Tag::LOGR: case Tag::POW: case Tag::POWR:
+            x = new ArithCmd(m_look);
+            move();
+            return x;
     }
     return trig_cmd();
 }
@@ -202,128 +149,115 @@ Parser::arith_cmd()
 Stmt *
 Parser::trig_cmd()
 {
-    using AsmInter::Cmd;
+    using AsmInter::TrigCmd;
     using AsmLexer::Tag;
     using CompLexer::Token;
-    trig_cmd_t cmd =
-    {
-        .id = 0,
-        .r = 0
-    };
 
     Token *tok = nullptr;
     switch (m_look->tag())
     {
-        case Tag::COS:
-            cmd.id = cmd::FCOS;
-            match(Tag::REG);
-            return new Cmd(std::string((char *) &cmd, sizeof(trig_cmd_t)));
-        case Tag::SIN:
-            cmd.id = cmd::FSIN;
-            match(Tag::REG);
-            return new Cmd(std::string((char *) &cmd, sizeof(trig_cmd_t)));
-        case Tag::TAN:
-            match(Tag::REG);
-            return new Cmd(std::string((char *) &cmd, sizeof(trig_cmd_t)));
-        case Tag::CTAN:
-            match(Tag::REG);
-            return new Cmd(std::string((char *) &cmd, sizeof(trig_cmd_t)));
-        case Tag::ASIN:
-            match(Tag::REG);
-            return new Cmd(std::string((char *) &cmd, sizeof(trig_cmd_t)));
-        case Tag::ACOS:
-            match(Tag::REG);
-            return new Cmd(std::string((char *) &cmd, sizeof(trig_cmd_t)));
-        case Tag::ATAN:
-            match(Tag::REG);
-            return new Cmd(std::string((char *) &cmd, sizeof(trig_cmd_t)));
-        case Tag::ACTAN:
-            match(Tag::REG);
-            return new Cmd(std::string((char *) &cmd, sizeof(trig_cmd_t)));
+        case Tag::COS: case Tag::SIN: case Tag::TAN: case Tag::CTAN:
+        case Tag::ASIN: case Tag::ACOS: case Tag::ATAN: case Tag::ACTAN:
+            tok = m_look;
+            move();
+            return new TrigCmd(tok, reg());
     }
     return ld_cmd();
+}
+
+AsmInter::Reg *
+Parser::reg()
+{
+    using AsmLexer::Tag;
+    using CompLexer::Token;
+    using AsmInter::Reg;
+
+    Token *tok = m_look;
+    match(Tag::REG);
+
+    return new Reg(tok);
 }
 
 Stmt *
 Parser::ld_cmd()
 {
     using AsmLexer::Tag;
-    using AsmInter::Cmd;
+    using AsmInter::LoadRealCmd;
+    using AsmInter::LoadMemCmd;
+    using AsmInter::LoadRegCmd;
+    using AsmInter::Real;
     using CompLexer::Token;
 
-    int tag = 0;
+    Token *tok = nullptr;
     switch (m_look->tag())
     {
         case Tag::FLD:
-            move();
-            if ((tag = m_look->tag()) == CompLexer::REAL)
-            {
-                ld_cmd_real_t cmd =
-                {
-                    .id = cmd::FLD_REAL
-                };
-                *(double *) (cmd.real) = std::stod(m_look->val());
-                move();
-                return new Cmd(std::string((char *) &cmd, sizeof (ld_cmd_real_t)));
-            }
-            else if (tag == AsmLexer::REG)
-            {
-                ld_cmd_reg_t cmd =
-                {
-                    .id = cmd::FLD_REG
-                };
-                move();
-                return new Cmd(std::string((char *) &cmd, sizeof(ld_cmd_reg_t)));
-            }
-            else if (tag == '[')
-            {
-                ld_cmd_mem_t cmd =
-                {
-                    .id = cmd::FLD_MEM
-                };
-                match(']');
-                return new Cmd(std::string((char *) &cmd, sizeof (ld_cmd_mem_t)));
-            }
-            else
-            {
-                return new Cmd(std::string(""));
-            }
         case Tag::PUSH:
+            tok = m_look;
             move();
-            if ((tag = m_look->tag()) == CompLexer::Tag::REAL)
+            if (m_look->tag() == '[')
             {
-                ld_cmd_real_t cmd =
-                {
-                    .id = cmd::PUSH_REAL
-                };
-                *(double *) (cmd.real) = std::stod(m_look->val());
                 move();
-                return new Cmd(std::string((char *) &cmd, sizeof (ld_cmd_real_t)));
+                return new LoadMemCmd(tok, offset());
             }
-            else if (tag == AsmLexer::Tag::REG)
+            else if (m_look->tag() == Tag::REG)
             {
-                ld_cmd_reg_t cmd =
-                {
-                    .id = cmd::PUSH_REG
-                };
                 move();
-                return new Cmd(std::string((char *) &cmd, sizeof (ld_cmd_reg_t)));
+                return new LoadRegCmd(tok, reg());
             }
-            else if (tag == '[')
+            else if (m_look->tag() == CompLexer::Tag::REAL)
             {
-                ld_cmd_mem_t cmd =
-                {
-                    .id = cmd::PUSH_MEM
-                };
-                match(']');
-                return new Cmd(std::string((char *) &cmd, sizeof (ld_cmd_mem_t)));
+                move();
+                return new LoadRealCmd(tok, new Real(m_look));
             }
             else
             {
-                return new Cmd(std::string(""));
+                std::cerr << "unexpected sym:" << std::endl
+                          << "expected offset register or real" << std::endl
+                          << m_look->val() << " given" << std::endl;
             }
     }
     return cmd();
+}
+
+AsmInter::Offset *
+Parser::offset()
+{
+    using AsmInter::Offset;
+    using AsmInter::UnaryOffset;
+    using CompLexer::Token;
+    if (m_look->tag() == '-')
+    {
+        Token *tok = m_look;
+        move();
+        return new UnaryOffset(tok, offset());
+    }
+    else
+    {
+        return new Offset(expr());
+    }
+}
+
+AsmInter::Expr *
+Parser::expr()
+{
+    using AsmInter::Expr;
+    using AsmInter::Real;
+    using CompLexer::Tag;
+
+    Expr *x = nullptr;
+    switch (m_look->tag())
+    {
+        case Tag::REAL:
+            x = new Real(m_look);
+            break;
+        default:
+            std::cerr << "unexpected sym" << std::endl
+                      << "expected REAL" << std::endl;
+            x = new Expr();
+            break;
+    }
+    return x;
 }
 
 Stmt *
@@ -337,49 +271,17 @@ Parser::cmd()
 {
     using AsmLexer::Tag;
     using AsmInter::Cmd;
-
-    cmd_t cmd =
-    {
-        .id = 0,
-        .unused_bits = 0
-    };
-
+    Stmt *stmt = nullptr;
     switch (m_look->tag())
     {
-        case Tag::END:
-            cmd.id = cmd::END;
-            return new Cmd(std::string((char *) &cmd, sizeof (cmd_t)));
-        case Tag::POP:
-            cmd.id = cmd::END;
-            return new Cmd(std::string((char *) &cmd, sizeof (cmd_t)));
-        case Tag::RET:
-            cmd.id = cmd::END;
-            return new Cmd(std::string((char *) &cmd, sizeof (cmd_t)));
+        case Tag::END: case Tag::POP: case Tag::RET:
+            stmt = new Cmd(m_look);
+            break;
+        default:
+            std::cerr << "unexpected sym" << std::endl
+                      << "expected cmd" << std::endl;
+            stmt = new Stmt();
     }
-    return new Cmd(std::string(""));
+    move();
+    return stmt;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

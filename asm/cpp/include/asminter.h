@@ -19,14 +19,22 @@ private:
 class Expr : public Inter::Stmt
 {
 public:
-    Expr(CompLexer::Token *tok);
+    Expr();
     virtual ~Expr();
+    virtual std::string gen() const;
+};
+
+class Op : public Expr
+{
+public:
+    Op(CompLexer::Token *tok);
+    virtual ~Op();
     virtual std::string gen() const;
 protected:
     CompLexer::Token *m_tok;
 };
 
-class Real : public Expr
+class Real : public Op
 {
 public:
     Real(CompLexer::Token *tok);
@@ -94,10 +102,10 @@ private:
     LabelSeq *m_lbl_seq;
 };
 
-class Reg : public Inter::Id
+class Reg : public Op
 {
 public:
-    Reg(CompLexer::Token *tok, unsigned long offset);
+    Reg(CompLexer::Token *tok);
     virtual ~Reg();
     unsigned long val() const;
 };
@@ -105,11 +113,20 @@ public:
 class Offset : public Expr
 {
 public:
-    Offset(CompLexer::Token *tok, Expr *offset_expr);
+    Offset(Expr *offset_expr);
     virtual ~Offset();
-    int16_t val() const;
-private:
+    virtual int16_t val() const;
+    virtual std::string gen() const;
+protected:
     Expr *m_offset_expr;
+};
+
+class UnaryOffset : public Op, public Offset
+{
+public:
+    UnaryOffset(CompLexer::Token *tok, Offset *offset_expr);
+    virtual ~UnaryOffset();
+    virtual int16_t val() const;
 };
 
 class ArithCmd : public Cmd

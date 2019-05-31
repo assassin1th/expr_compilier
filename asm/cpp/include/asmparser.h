@@ -26,6 +26,9 @@ private:
     Inter::Stmt *ld_cmd();
     Inter::Stmt *call_cmd();
     Inter::Stmt *cmd();
+    AsmInter::Reg *reg();
+    AsmInter::Offset *offset();
+    AsmInter::Expr *expr();
 };
 
 }
