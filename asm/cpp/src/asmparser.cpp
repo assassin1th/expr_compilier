@@ -80,7 +80,7 @@ Parser::match(int tag)
     }
 }
 
-Stmt *
+AsmInter::Obj*
 Parser::parse()
 {
     using AsmInter::LabelSeq;
@@ -198,7 +198,9 @@ Parser::ld_cmd()
             if (m_look->tag() == '[')
             {
                 move();
-                return new LoadMemCmd(tok, offset());
+                Stmt *x = new LoadMemCmd(tok, offset());
+                match(']');
+                return x;
             }
             else if (m_look->tag() == Tag::REG)
             {

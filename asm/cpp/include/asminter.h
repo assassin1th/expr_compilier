@@ -1,6 +1,10 @@
 #ifndef ASMINTER_H_
 #define ASMINTER_H_
 
+#ifdef __TEST__
+#define __ASM_PARSER_TEST__
+#endif // __TEST__
+
 #include "comp/cpp/include/inter.h"
 
 namespace AsmInter {
@@ -97,6 +101,10 @@ public:
     Obj(Stmt *stmt, LabelSeq *lbl_seq);
     virtual ~Obj();
     virtual std::string gen() const;
+#ifdef __ASM_PARSER_TEST__
+    std::string head_test() const;
+    std::string cmd_test() const;
+#endif // __ASM_PARSER_TEST__
 private:
     Stmt *m_stmt;
     LabelSeq *m_lbl_seq;

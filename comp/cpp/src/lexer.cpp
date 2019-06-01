@@ -150,7 +150,7 @@ Lexer::scan()
     return t;
 }
 
-#ifdef LEXER_TEST_
+#ifdef __COMP_LEXER_TEST__
 const std::string
 Lexer::test()
 {

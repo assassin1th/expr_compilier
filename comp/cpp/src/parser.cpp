@@ -161,21 +161,21 @@ Parser::factor()
         case Tag::REAL:
             x = new Constant(m_look);
             move();
-            return x;
+            break;
         case '(':
             move();
             x = expr();
             match(')');
-            return x;
+            break;
         case Tag::COS: case Tag::SIN: case Tag::TAN:
         case Tag::CTAN: case Tag::ASIN: case Tag::ACOS:
         case Tag::ATAN: case Tag::ACTAN:
             id = m_look;
             move();
             match('(');
-            x = new Trig(id, x);
+            x = new Trig(id, expr());
             match(')');
-            return x;
+            break;
         case Tag::LOG:
             id = m_look;
             match('(');
@@ -183,15 +183,17 @@ Parser::factor()
             match(',');
             x = new Arith(id, x, expr());
             match(')');
-            return x;
+            break;
         case Tag::ID:
-            return call();
+            x = call();
+            break;
         default:
             std::cerr << "syntax error1" << std::endl;
             std::cerr << m_look->val() << std::endl;
             std::cerr << m_look->tag() << std::endl;
-            return x;
+            break;
     }
+    return x;
 }
 
 Expr *

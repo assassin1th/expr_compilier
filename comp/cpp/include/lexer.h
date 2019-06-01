@@ -1,6 +1,10 @@
 #ifndef LEXER_H_
 #define LEXER_H_
 
+#ifdef __TEST__
+#define __COMP_LEXER_TEST__
+#endif // __TEST__
+
 #include <string>
 #include "cont/cpp/include/containers.h"
 
@@ -50,7 +54,7 @@ public:
     Lexer(const std::string &src);
     ~Lexer();
     Token *scan();
-#ifdef LEXER_TEST_
+#ifdef __COMP_LEXER_TEST__
     const std::string test();
 #endif // LEXER_TEST_
     void reserve(Token *tok, const std::string &key);

@@ -2,6 +2,7 @@
 #include "asm/cpp/include/asmlexer.h"
 #include <string>
 #include "vm/c/include/cmd.h"
+
 using namespace AsmInter;
 
 Seq::Seq(Stmt *stmt1, Stmt *stmt2) :
@@ -141,7 +142,7 @@ HeaderLable::~HeaderLable()
 std::string
 HeaderLable::gen() const
 {
-    return "\t" + m_tok->val() + "H\n";
+    return "\t" + m_tok->val() + " H\n";
 }
 
 LabelSeq::LabelSeq(Stmt *lbl) :
@@ -195,8 +196,22 @@ Obj::~Obj()
 std::string
 Obj::gen() const
 {
-    return "SYMTAB:" + m_lbl_seq->gen() + "\n" + m_stmt->gen();
+    return "SYMTAB:\n" + m_lbl_seq->gen() + "\n" + m_stmt->gen();
 }
+
+#ifdef __ASM_PARSER_TEST__
+std::string
+Obj::head_test() const
+{
+    return "SYMTAB:\n" + m_lbl_seq->gen();
+}
+
+std::string
+Obj::cmd_test() const
+{
+    return m_stmt->gen();
+}
+#endif // __ASM_PARSER_TEST__
 
 Reg::Reg(CompLexer::Token *tok) :
     Op(tok)

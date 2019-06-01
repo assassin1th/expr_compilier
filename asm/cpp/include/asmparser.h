@@ -1,8 +1,13 @@
 #ifndef ASMPARSER_H_
 #define ASMPARSER_H_
 
+#ifdef __TEST__
+#define __ASM_PARSER_TEST__
+#endif // __TEST__
+
 #include "comp/cpp/include/parser.h"
 #include "asm/cpp/include/asminter.h"
+
 namespace AsmParser {
 
 class Parser
@@ -10,7 +15,7 @@ class Parser
 public:
     Parser(CompLexer::Lexer *lex);
     ~Parser();
-    Inter::Stmt *parse();
+    AsmInter::Obj *parse();
 private:
     void move();
     void match(int tag);
