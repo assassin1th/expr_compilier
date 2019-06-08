@@ -52,18 +52,20 @@ class Lexer
 {
 public:
     Lexer(const std::string &src);
-    ~Lexer();
-    Token *scan();
+    virtual ~Lexer();
+    virtual Token *scan();
 #ifdef __COMP_LEXER_TEST__
     const std::string test();
 #endif // LEXER_TEST_
     void reserve(Token *tok, const std::string &key);
 private:
+    const std::string m_src_str;
+protected:
     void readch();
     bool readch(int c);
-    const std::string m_src_str;
     std::string::const_iterator m_peek;
     Containers::Table<Token> *m_tab;
+
 };
 
 }
