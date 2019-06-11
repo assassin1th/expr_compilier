@@ -18,7 +18,7 @@ class Register : public CompLexer::Token
 public:
     Register(unsigned int num);
     virtual ~Register();
-    virtual const std::string val() const;
+    virtual const std::string &val() const;
 private:
     unsigned int m_num;
 };

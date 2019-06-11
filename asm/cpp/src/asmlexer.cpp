@@ -11,10 +11,10 @@ Register::~Register()
 {
 }
 
-const std::string
+const std::string &
 Register::val() const
 {
-    return std::to_string(m_num);
+    return tmp_string = std::to_string(m_num);
 }
 
 Lexer::Lexer(const std::string &src) :

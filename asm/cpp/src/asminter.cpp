@@ -14,7 +14,7 @@ Seq::~Seq()
 {
 }
 
-std::string
+const std::string
 Seq::gen() const
 {
     return m_stmt1->gen() + m_stmt2->gen();
@@ -28,7 +28,7 @@ Expr::~Expr()
 {
 }
 
-std::string
+const std::string
 Expr::gen() const
 {
     return std::string("");
@@ -43,7 +43,7 @@ Op::~Op()
 {
 }
 
-std::string
+const std::string
 Op::gen() const
 {
     return m_tok->val();
@@ -73,7 +73,7 @@ Cmd::~Cmd()
 {
 }
 
-std::string
+const std::string
 Cmd::gen() const
 {
     using AsmLexer::Tag;
@@ -108,7 +108,7 @@ Label::~Label()
 {
 }
 
-std::string
+const std::string
 Label::gen() const
 {
     return "\t" + m_tok->val() + "D\n";
@@ -124,7 +124,7 @@ UndefLabel::~UndefLabel()
 }
 
 
-std::string
+const std::string
 UndefLabel::gen() const
 {
     return "\t" + m_tok->val() + "U\n";
@@ -139,7 +139,7 @@ HeaderLable::~HeaderLable()
 {
 }
 
-std::string
+const std::string
 HeaderLable::gen() const
 {
     return "\t" + m_tok->val() + " H\n";
@@ -156,7 +156,7 @@ LabelSeq::~LabelSeq()
     delete m_seq;
 }
 
-std::string
+const std::string
 LabelSeq::gen() const
 {
     if (m_seq)
@@ -193,7 +193,7 @@ Obj::~Obj()
     delete m_stmt;
 }
 
-std::string
+const std::string
 Obj::gen() const
 {
     return "SYMTAB:\n" + m_lbl_seq->gen() + "\n" + m_stmt->gen();
@@ -244,7 +244,7 @@ Offset::val() const
     return stoi(gen());
 }
 
-std::string
+const std::string
 Offset::gen() const
 {
     return m_offset_expr->gen();
@@ -275,7 +275,7 @@ ArithCmd::~ArithCmd()
 {
 }
 
-std::string
+const std::string
 ArithCmd::gen() const
 {
     using AsmLexer::Tag;
@@ -344,7 +344,7 @@ TrigCmd::~TrigCmd()
     delete m_reg;
 }
 
-std::string
+const std::string
 TrigCmd::gen() const
 {
     using AsmLexer::Tag;
@@ -396,7 +396,7 @@ LoadRegCmd::~LoadRegCmd()
     delete  m_reg;
 }
 
-std::string
+const std::string
 LoadRegCmd::gen() const
 {
     using AsmLexer::Tag;
@@ -423,7 +423,7 @@ LoadMemCmd::~LoadMemCmd()
     delete m_offset;
 }
 
-std::string
+const std::string
 LoadMemCmd::gen() const
 {
     using AsmLexer::Tag;
@@ -450,7 +450,7 @@ LoadRealCmd::~LoadRealCmd()
     delete m_const;
 }
 
-std::string
+const std::string
 LoadRealCmd::gen() const
 {
     using AsmLexer::Tag;
