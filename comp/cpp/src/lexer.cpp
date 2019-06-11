@@ -4,6 +4,8 @@
 
 using namespace CompLexer;
 
+std::string Token::tmp_string = "";
+
 Token::Token(int tag) :
     m_tag(tag)
 {
@@ -19,10 +21,10 @@ Token::tag() const
     return m_tag;
 }
 
-const std::string
+const std::string &
 Token::val() const
 {
-    return std::string(sizeof(char), m_tag);
+    return tmp_string = std::string(sizeof(char), m_tag);
 }
 
 Word::Word(int tag, const std::string &lexeme) :
@@ -34,7 +36,7 @@ Word::~Word()
 {
 }
 
-const std::string
+const std::string &
 Word::val() const
 {
     return m_lexeme;
@@ -49,7 +51,7 @@ Real::~Real()
 {
 }
 
-const std::string
+const std::string &
 Real::val() const
 {
     return m_num;

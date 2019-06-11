@@ -11,7 +11,7 @@ Stmt::~Stmt()
 {
 }
 
-std::string
+const std::string
 Stmt::gen() const
 {
     return "";
@@ -28,7 +28,7 @@ FuncDecl::~FuncDecl()
 }
 
 
-std::string
+const std::string
 FuncDecl::gen() const
 {
     return m_id->val() + ":\n" + m_func_expr->gen();
@@ -58,7 +58,7 @@ Id::~Id()
 {
 }
 
-std::string
+const std::string
 Id::gen() const
 {
     return "\tFLD [-" + std::to_string(m_offset) + "]\n";
@@ -83,7 +83,7 @@ Unary::~Unary()
     delete m_expr;
 }
 
-std::string
+const std::string
 Unary::gen() const
 {
     return m_expr->gen();
@@ -102,7 +102,7 @@ Arith::~Arith()
     delete m_rexpr;
 }
 
-std::string
+const std::string
 Arith::gen() const
 {
     std::string res("\t");
@@ -145,7 +145,7 @@ Constant::~Constant()
 {
 }
 
-std::string
+const std::string
 Constant::gen() const
 {
     return "\tFLD " + std::to_string(m_val) + "\n";
@@ -161,7 +161,7 @@ Trig::~Trig()
     delete m_expr;
 }
 
-std::string
+const std::string
 Trig::gen() const
 {
     using CompLexer::Tag;
@@ -205,7 +205,7 @@ Call::~Call()
 {
 }
 
-std::string
+const std::string
 Call::gen() const
 {
     return "";

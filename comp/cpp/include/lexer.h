@@ -23,9 +23,11 @@ public:
     Token(int tag);
     virtual ~Token();
     int tag() const;
-    virtual const std::string val() const;
+    virtual const std::string &val() const;
 private:
     int m_tag;
+protected:
+    static std::string tmp_string;
 };
 
 class Word : public Token
@@ -33,7 +35,7 @@ class Word : public Token
 public:
     Word(int tag, const std::string &lexeme);
     virtual ~Word();
-    virtual const std::string val() const;
+    virtual const std::string &val() const;
 private:
     std::string m_lexeme;
 };
@@ -43,7 +45,7 @@ class Real : public Token
 public:
     Real(const std::string &num);
     ~Real();
-    virtual const std::string val() const;
+    virtual const std::string &val() const;
 private:
     std::string m_num;
 };

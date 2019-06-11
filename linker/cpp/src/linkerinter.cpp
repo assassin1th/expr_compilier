@@ -2,7 +2,7 @@
 
 using namespace LinkerInter;
 
-static const std::string null_string= "";
+static std::string tmp_string = "";
 
 Code::Code()
 {
@@ -15,5 +15,20 @@ Code::~Code()
 const std::string &
 Code::gen() const
 {
-    return null_string;
+    return tmp_string = "";
+}
+
+ByteCode::ByteCode(const std::string &bytes) :
+    Code(), m_bytes(bytes)
+{
+}
+
+ByteCode::~ByteCode()
+{
+}
+
+const std::string &
+ByteCode::gen() const
+{
+    return m_bytes;
 }
