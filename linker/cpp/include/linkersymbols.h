@@ -3,16 +3,25 @@
 #include "linkerinter.h"
 #include "cont/cpp/include/containers.h"
 
+
 namespace LinkerSymbols {
+
+enum SymTag
+{
+    DEFINED, UNDEFINED
+};
 
 class SymLink : public LinkerInter::Sym
 {
 public:
     SymLink(const CompLexer::Token *tok,
-            LinkerInter::SymTag tag = LinkerInter::SymTag::UNDEFINED);
+            SymTag tag = SymTag::UNDEFINED);
     virtual ~SymLink();
+    virtual const std::string gen(LinkerObject::SymTable *st,
+                                  int16_t offset) const;
+    SymTag tag() const;
 private:
-    const LinkerInter::SymTag m_tag;
+    const SymTag m_tag;
 };
 
 class DefinedSymLink : public SymLink
@@ -20,7 +29,8 @@ class DefinedSymLink : public SymLink
 public:
     DefinedSymLink(const CompLexer::Token *tok, int16_t offset);
     virtual ~DefinedSymLink();
-    virtual const std::string gen() const;
+    virtual const std::string gen(LinkerObject::SymTable *st,
+                                  int16_t offset) const;
 private:
     const int16_t m_offset;
 };

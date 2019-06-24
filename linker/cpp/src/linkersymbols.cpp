@@ -2,8 +2,7 @@
 
 using namespace LinkerSymbols;
 
-SymLink::SymLink(const CompLexer::Token *tok,
-                 LinkerInter::SymTag tag) :
+SymLink::SymLink(const CompLexer::Token *tok, SymTag tag) :
     Sym(tok), m_tag(tag)
 {
 }
@@ -12,8 +11,21 @@ SymLink::~SymLink()
 {
 }
 
+SymTag
+SymLink::tag() const
+{
+    return m_tag;
+}
+
+const std::string
+SymLink::gen(LinkerObject::SymTable *st,
+             int16_t offset) const
+{
+    return "";
+}
+
 DefinedSymLink::DefinedSymLink(const CompLexer::Token *tok, int16_t offset) :
-    SymLink(tok, LinkerInter::SymTag::DEFINED), m_offset(offset)
+    SymLink(tok, SymTag::DEFINED), m_offset(offset)
 {
 }
 
@@ -22,9 +34,11 @@ DefinedSymLink::~DefinedSymLink()
 }
 
 const std::string
-DefinedSymLink::gen() const
+DefinedSymLink::gen(LinkerObject::SymTable *st,
+                    int16_t offset) const
 {
-    return std::string((char *) &m_offset, sizeof (int16_t));
+    offset = m_offset - offset;
+    return std::string((char *) &(offset), sizeof (int16_t));
 }
 
 Env::Env() :
