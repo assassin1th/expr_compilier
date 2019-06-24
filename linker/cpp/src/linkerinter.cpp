@@ -49,7 +49,7 @@ Sym::~Sym()
 const std::string
 Sym::gen() const
 {
-    return "";
+    return m_tok->val();
 }
 
 const Code *
@@ -57,29 +57,3 @@ Sym::reduce() const
 {
     return this;
 }
-
-SymLink::SymLink(const CompLexer::Token *tok, SymTag tag) :
-    Sym(tok), m_tag(tag)
-{
-}
-
-SymLink::~SymLink()
-{
-}
-
-DefinedSymLink::DefinedSymLink(const CompLexer::Token *tok, int16_t offset) :
-    SymLink(tok, SymTag::DEFINED), m_offset(offset)
-{
-}
-
-DefinedSymLink::~DefinedSymLink()
-{
-}
-
-const std::string
-DefinedSymLink::gen() const
-{
-    return std::string((char *) &m_offset, sizeof (int16_t));
-}
-
-

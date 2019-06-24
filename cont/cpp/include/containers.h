@@ -13,7 +13,7 @@ public:
     Cont() {}
     virtual ~Cont() {}
     virtual T *get(const std::string &key) = 0;
-    virtual Cont<T> *set(T *data, const std::string &key) = 0;
+    virtual Cont<T> *set(const T *data, const std::string &key) = 0;
 };
 
 template <typename T>
@@ -41,7 +41,7 @@ public:
         }
         return nullptr;
     }
-    virtual Cont<T> *set(T *data, const std::string &key)
+    virtual Cont<T> *set(const T *data, const std::string &key)
     {
         if (m_n_elem == 0)
         {
@@ -55,7 +55,7 @@ public:
 private:
     struct node
     {
-        node(T *data, const std::string &key, struct node *next = nullptr):
+        node(const T *data, const std::string &key, struct node *next = nullptr):
             data(data), key(key), next(next)
         {
         }
@@ -93,7 +93,7 @@ public:
         delete[] m_tab;
     }
 
-    Cont<T> *set(T *data, const std::string &key)
+    Cont<T> *set(const T *data, const std::string &key)
     {
         int hashval = hash(key.c_str());
         m_tab[hashval].m_cont = m_tab[hashval].m_cont->set(data, key);

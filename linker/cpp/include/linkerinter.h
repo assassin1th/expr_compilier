@@ -11,6 +11,7 @@ enum SymTag
     DEFINED, UNDEFINED
 };
 
+
 class Code
 {
 public:
@@ -41,24 +42,6 @@ protected:
     const CompLexer::Token *m_tok;
 };
 
-class SymLink : public Sym
-{
-public:
-    SymLink(const CompLexer::Token *tok, SymTag tag = SymTag::UNDEFINED);
-    virtual ~SymLink();
-private:
-    const SymTag m_tag;
-};
-
-class DefinedSymLink : public SymLink
-{
-public:
-    DefinedSymLink(const CompLexer::Token *tok, int16_t offset);
-    virtual ~DefinedSymLink();
-    virtual const std::string gen() const;
-private:
-    const int16_t m_offset;
-};
 
 }
 
