@@ -39,6 +39,7 @@ public:
     virtual ~Sym();
     virtual const std::string gen(LinkerObject::SymTable *sym,
                                   int16_t offset) const;
+    const CompLexer::Token *tok() const;
 protected:
     const CompLexer::Token *m_tok;
 };

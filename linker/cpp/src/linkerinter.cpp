@@ -51,6 +51,12 @@ Sym::gen(LinkerObject::SymTable *st,
     return st->get_sym(this)->gen(st, offset);
 }
 
+const CompLexer::Token *
+Sym::tok() const
+{
+    return m_tok;
+}
+
 SymCode::SymCode(const Code *code, const Sym *sym) :
     m_code(code), m_sym(sym)
 {

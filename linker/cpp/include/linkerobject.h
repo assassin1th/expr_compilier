@@ -27,7 +27,7 @@ public:
     virtual const LinkerInter::Code *solve(SymTable *st, const Objects *objs) const;
     const LinkerSymbols::SymLink *get_sym(const LinkerInter::Sym *sym) const;
 private:
-    std::unordered_map<std::string, LinkerSymbols::SymLink *> m_tab;
+    std::unordered_map<const std::string, LinkerSymbols::SymLink *> m_tab;
 };
 
 class ObjectHeader : public Object
@@ -47,7 +47,7 @@ public:
     ObjectFile(const ObjectHeader *objh, const LinkerInter::Code *objcode);
     virtual ~ObjectFile();
     virtual const LinkerInter::Code *solve(SymTable *st, const Objects *objs) const;
-    const LinkerSymbols::SymLink *find_sym(LinkerInter::Sym *sym) const;
+    const LinkerSymbols::SymLink *find_sym(const LinkerInter::Sym *sym) const;
 private:
     const ObjectHeader *m_objh;
     const LinkerInter::Code *m_objcode;
@@ -60,7 +60,7 @@ public:
     ~Objects();
     int add(ObjectFile *obj_file);
 private:
-    std::vector<ObjectFile> m_files;
+    std::vector<ObjectFile *> m_files;
 };
 
 }

@@ -9,10 +9,19 @@ namespace LinkerLexer {
 
 enum Tag
 {
-    ID = 256
+    ID = 256, NUMBER
 };
 
-class Lexer : CompLexer::Lexer
+class Number : public CompLexer::Token
+{
+public:
+    Number();
+    virtual ~Number();
+    virtual const std::string &val() const;
+
+};
+
+class Lexer : public CompLexer::Lexer
 {
 public:
     Lexer(const std::string &src);
