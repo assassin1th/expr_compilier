@@ -11,42 +11,43 @@ namespace LinkerObject {
 class SymTable;
 class Objects;
 
-class Object
-{
-public:
-    Object();
-    virtual ~Object();
-    virtual const LinkerInter::Code *solve(SymTable *st, const Objects *objs) const;
-};
-
-class SymTable : public Object
+class SymTable
 {
 public:
     SymTable();
-    virtual ~SymTable();
-    virtual const LinkerInter::Code *solve(SymTable *st, const Objects *objs) const;
+    ~SymTable();
+    const LinkerInter::Code *solve(SymTable *st,
+                                   const Objects *objs,
+                                   size_t offset,
+                                   size_t block_size) const;
     const LinkerSymbols::SymLink *get_sym(const LinkerInter::Sym *sym) const;
+    int set_sym(const LinkerSymbols::SymLink *sl);
 private:
     std::unordered_map<const std::string, LinkerSymbols::SymLink *> m_tab;
 };
 
-class ObjectHeader : public Object
+class ObjectHeader
 {
 public:
     ObjectHeader(const SymTable *st);
-    virtual ~ObjectHeader();
-    virtual const LinkerInter::Code *solve(SymTable *st, const Objects *objs) const;
+    ~ObjectHeader();
+    const LinkerInter::Code *solve(SymTable *st,
+                                   const Objects *objs,
+                                   size_t offset,
+                                   size_t block_size) const;
     const LinkerSymbols::SymLink *get_sym(const LinkerInter::Sym *sym) const;
 private:
     const SymTable *m_st;
 };
 
-class ObjectFile : public Object
+class ObjectFile
 {
 public:
     ObjectFile(const ObjectHeader *objh, const LinkerInter::Code *objcode);
-    virtual ~ObjectFile();
-    virtual const LinkerInter::Code *solve(SymTable *st, const Objects *objs) const;
+    ~ObjectFile();
+    const LinkerInter::Code *solve(SymTable *st,
+                                           const Objects *objs,
+                                           size_t offset) const;
     const LinkerSymbols::SymLink *find_sym(const LinkerInter::Sym *sym) const;
 private:
     const ObjectHeader *m_objh;
@@ -59,6 +60,7 @@ public:
     Objects();
     ~Objects();
     int add(ObjectFile *obj_file);
+    const ObjectFile *find_object_file(const LinkerInter::Sym *sym) const;
 private:
     std::vector<ObjectFile *> m_files;
 };

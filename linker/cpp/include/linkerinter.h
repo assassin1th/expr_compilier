@@ -19,6 +19,7 @@ public:
     virtual ~Code();
     virtual const std::string gen(LinkerObject::SymTable *sym,
                                   int16_t offset) const;
+    virtual size_t size() const;
 };
 
 class ByteCode : public Code
@@ -28,6 +29,7 @@ public:
     virtual ~ByteCode();
     virtual const std::string gen(LinkerObject::SymTable *sym,
                                   int16_t offset) const;
+    virtual size_t size() const;
 private:
     const std::string m_bytes;
 };
@@ -40,6 +42,7 @@ public:
     virtual const std::string gen(LinkerObject::SymTable *sym,
                                   int16_t offset) const;
     const CompLexer::Token *tok() const;
+    virtual size_t size() const;
 protected:
     const CompLexer::Token *m_tok;
 };
@@ -51,6 +54,7 @@ public:
     virtual ~SymCode();
     virtual const std::string gen(LinkerObject::SymTable *st,
                                   int16_t offset) const;
+    virtual size_t size() const;
 private:
     const Code *m_code;
     const Sym *m_sym;
@@ -63,6 +67,7 @@ public:
     virtual ~CodeSeq();
     virtual const std::string gen(LinkerObject::SymTable *sym,
                                   int16_t offset) const;
+    virtual size_t size() const;
 private:
     const Code *m_pref_code;
     const Code *m_post_code;
