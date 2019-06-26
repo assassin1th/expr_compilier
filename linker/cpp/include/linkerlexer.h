@@ -15,10 +15,11 @@ enum Tag
 class Number : public CompLexer::Token
 {
 public:
-    Number();
+    Number(const std::string &num);
     virtual ~Number();
     virtual const std::string &val() const;
-
+private:
+    const std::string m_num;
 };
 
 class Lexer : public CompLexer::Lexer
