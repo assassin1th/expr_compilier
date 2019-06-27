@@ -12,8 +12,7 @@ Code::~Code()
 }
 
 const std::string
-Code::gen(LinkerObject::SymTable *st,
-          int16_t offset) const
+Code::gen() const
 {
     return "";
 }
@@ -22,6 +21,13 @@ size_t
 Code::size() const
 {
     return 0;
+}
+
+const Code *
+Code::reduce(LinkerObject::SymTable *sym,
+             int16_t offset) const
+{
+    return this;
 }
 
 
@@ -35,10 +41,16 @@ ByteCode::~ByteCode()
 }
 
 const std::string
-ByteCode::gen(LinkerObject::SymTable *st,
-              int16_t offset) const
+ByteCode::gen() const
 {
     return m_bytes;
+}
+
+const Code *
+ByteCode::reduce(LinkerObject::SymTable *sym,
+                 int16_t offset) const
+{
+    return new ByteCode(m_bytes);
 }
 
 size_t
@@ -57,10 +69,17 @@ Sym::~Sym()
 }
 
 const std::string
-Sym::gen(LinkerObject::SymTable *st,
-         int16_t offset) const
+Sym::gen() const
 {
-    return st->get_sym(this)->gen(st, offset);
+    return "";
+}
+
+const Code *
+Sym::reduce(LinkerObject::SymTable *sym,
+            int16_t offset) const
+{
+    offset = sym->get_sym(this)->offset() - offset;
+    return new ByteCode(std::string((char *) &offset, sizeof (int16_t)));
 }
 
 const CompLexer::Token *
@@ -87,10 +106,20 @@ SymCode::~SymCode()
 }
 
 const std::string
-SymCode::gen(LinkerObject::SymTable *st,
-             int16_t offset) const
+SymCode::gen() const
 {
-    return m_code->gen(st, offset) + m_sym->gen(st, offset);
+    return m_code->gen() + m_sym->gen();
+}
+
+const Code *
+SymCode::reduce(LinkerObject::SymTable *symtab,
+                int16_t offset) const
+{
+    const Code *pref = m_code->reduce(symtab, offset);
+    offset += m_code->size();
+    const Code *post = m_sym->reduce(symtab, offset);
+    offset += m_sym->size();
+    return new CodeSeq(pref, post);
 }
 
 size_t
@@ -111,10 +140,20 @@ CodeSeq::~CodeSeq()
 }
 
 const std::string
-CodeSeq::gen(LinkerObject::SymTable *st,
-    int16_t offset) const
+CodeSeq::gen() const
 {
-    return m_pref_code->gen(st, offset) + m_post_code->gen(st, offset);
+    return m_pref_code->gen() + m_post_code->gen();
+}
+
+const Code *
+CodeSeq::reduce(LinkerObject::SymTable *symtab,
+                int16_t offset) const
+{
+    const Code *pref = m_pref_code->reduce(symtab, offset);
+    offset += m_pref_code->size();
+    const Code *post = m_post_code->reduce(symtab, offset);
+    offset += m_post_code->size();
+    return new CodeSeq(pref, post);
 }
 
 size_t
@@ -123,40 +162,21 @@ CodeSeq::size() const
     return m_pref_code->size() + m_post_code->size();
 }
 
+CodeTmpSeq::CodeTmpSeq(const Code *pref_code,
+                       const Code *post_code) :
+    CodeSeq(pref_code, post_code)
+{
+}
 
+CodeTmpSeq::~CodeTmpSeq()
+{
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+const Code *
+CodeTmpSeq::reduce(LinkerObject::SymTable *symtab,
+                   int16_t offset) const
+{
+    const Code *code_seq = CodeSeq::reduce(symtab,offset);
+    delete this;
+    return code_seq;
+}

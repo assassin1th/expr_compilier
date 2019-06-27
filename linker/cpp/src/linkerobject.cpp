@@ -20,19 +20,22 @@ SymTable::solve(SymTable *st,
                 size_t offset,
                 size_t block_size) const
 {
-    LinkerInter::Code *code = nullptr;
+    LinkerInter::Code *code = new LinkerInter::Code();
     for (const auto &n : m_tab)
     {
         if (n.second->tag() == LinkerSymbols::SymTag::UNDEFINED)
         {
             ObjectFile *file = objs->find_object_file(n.second);
-            file->solve(st, objs, offset + block_size);
+            code = new LinkerInter::CodeTmpSeq(code,
+                                               file->solve(st, objs, offset + block_size));
         }
         else if (n.second->tag() == LinkerSymbols::SymTag::DEFINED)
         {
-            st->set_sym(new LinkerSymbols::DefinedSymLink(n.second->tok(), offset));
+            st->set_sym(new LinkerSymbols::DefinedSymLink(n.second->tok(),
+                                                          n.secons->offset() + offset));
         }
     }
+    return code;
 }
 
 const LinkerSymbols::SymLink *
@@ -100,7 +103,13 @@ ObjectFile::solve(SymTable *st,
                   const Objects *objs,
                   size_t offset) const
 {
-    return m_objh->solve(st, objs, offset, m_objcode->size());
+    return new LinkerInter::CodeTmpSeq(m_objcode,
+                                       m_objh->solve(st,
+                                                     objs,
+                                                     offset,
+                                                     m_objcode->size()
+                                                     )
+                                       );
 }
 
 const LinkerSymbols::SymLink *
@@ -139,12 +148,3 @@ Objects::find_object_file(const LinkerInter::Sym *sl) const
     }
     return nullptr;
 }
-
-
-
-
-
-
-
-
-

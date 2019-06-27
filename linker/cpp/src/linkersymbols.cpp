@@ -17,11 +17,10 @@ SymLink::tag() const
     return m_tag;
 }
 
-const std::string
-SymLink::gen(LinkerObject::SymTable *st,
-             int16_t offset) const
+int16_t
+SymLink::offset() const
 {
-    return "";
+    return 0;
 }
 
 DefinedSymLink::DefinedSymLink(const CompLexer::Token *tok, int16_t offset) :
@@ -33,12 +32,10 @@ DefinedSymLink::~DefinedSymLink()
 {
 }
 
-const std::string
-DefinedSymLink::gen(LinkerObject::SymTable *st,
-                    int16_t offset) const
+int16_t
+DefinedSymLink::offset() const
 {
-    offset = m_offset - offset;
-    return std::string((char *) &(offset), sizeof (int16_t));
+    return m_offset;
 }
 
 Env::Env() :

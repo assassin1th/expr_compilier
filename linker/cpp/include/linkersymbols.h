@@ -17,8 +17,7 @@ public:
     SymLink(const CompLexer::Token *tok,
             SymTag tag = SymTag::UNDEFINED);
     virtual ~SymLink();
-    virtual const std::string gen(LinkerObject::SymTable *st,
-                                  int16_t offset) const;
+    virtual int16_t offset() const;
     SymTag tag() const;
 private:
     const SymTag m_tag;
@@ -29,8 +28,7 @@ class DefinedSymLink : public SymLink
 public:
     DefinedSymLink(const CompLexer::Token *tok, int16_t offset);
     virtual ~DefinedSymLink();
-    virtual const std::string gen(LinkerObject::SymTable *st,
-                                  int16_t offset) const;
+    virtual int16_t offset() const;
 private:
     const int16_t m_offset;
 };
