@@ -12,12 +12,12 @@ namespace AsmInter {
 class Seq : public Inter::Stmt
 {
 public:
-    Seq(Stmt *stmt1, Stmt *stmt2);
+    Seq(const Stmt *stmt1, const Stmt *stmt2);
     virtual ~Seq();
     virtual const std::string gen() const;
 private:
-    Stmt *m_stmt1;
-    Stmt *m_stmt2;
+    const Stmt *m_stmt1;
+    const Stmt *m_stmt2;
 };
 
 class Expr : public Inter::Stmt
@@ -31,17 +31,17 @@ public:
 class Op : public Expr
 {
 public:
-    Op(CompLexer::Token *tok);
+    Op(const CompLexer::Token *tok);
     virtual ~Op();
     virtual const std::string gen() const;
 protected:
-    CompLexer::Token *m_tok;
+    const CompLexer::Token *m_tok;
 };
 
 class Real : public Op
 {
 public:
-    Real(CompLexer::Token *tok);
+    Real(const CompLexer::Token *tok);
     virtual ~Real();
     double val() const;
 };
@@ -49,48 +49,42 @@ public:
 class Cmd : public Inter::Stmt
 {
 public:
-    Cmd(CompLexer::Token *tok);
+    Cmd(const CompLexer::Token *tok);
     virtual ~Cmd();
     virtual const std::string gen() const;
 protected:
-    CompLexer::Token *m_tok;
+    const CompLexer::Token *m_tok;
 };
 
 class Label : public Inter::Stmt
 {
 public:
-    Label(CompLexer::Token *tok);
+    Label(const CompLexer::Token *tok);
     virtual ~Label();
     virtual const std::string gen() const;
 protected:
-    CompLexer::Token *m_tok;
+    const CompLexer::Token *m_tok;
 };
 
-class UndefLabel : public Label
+class DefinedLabel : public Label
 {
 public:
-    UndefLabel(CompLexer::Token *tok);
-    virtual ~UndefLabel();
+    DefinedLabel(const CompLexer::Token *tok, int16_t offset);
+    virtual ~DefinedLabel();
     virtual const std::string gen() const;
-};
-
-class HeaderLable : public Label
-{
-public:
-    HeaderLable(CompLexer::Token *tok);
-    virtual ~HeaderLable();
-    virtual const std::string gen() const;
+private:
+    const int16_t m_offset;
 };
 
 class LabelSeq : public Inter::Stmt
 {
 public:
-    LabelSeq(Stmt *lbl);
+    LabelSeq(const Stmt *lbl);
     virtual ~LabelSeq();
     virtual const std::string gen() const;
     void push_label(Stmt *lbl);
 private:
-    Stmt *m_lbl;
+    const Stmt *m_lbl;
     LabelSeq *m_seq;
 };
 
@@ -98,7 +92,7 @@ private:
 class Obj : public Inter::Stmt
 {
 public:
-    Obj(Stmt *stmt, LabelSeq *lbl_seq);
+    Obj(const Stmt *stmt, LabelSeq *lbl_seq);
     virtual ~Obj();
     virtual const std::string gen() const;
 #ifdef __ASM_PARSER_TEST__
@@ -106,14 +100,14 @@ public:
     std::string cmd_test() const;
 #endif // __ASM_PARSER_TEST__
 private:
-    Stmt *m_stmt;
+    const Stmt *m_stmt;
     LabelSeq *m_lbl_seq;
 };
 
 class Reg : public Op
 {
 public:
-    Reg(CompLexer::Token *tok);
+    Reg(const CompLexer::Token *tok);
     virtual ~Reg();
     unsigned long val() const;
 };
@@ -121,18 +115,18 @@ public:
 class Offset : public Expr
 {
 public:
-    Offset(Expr *offset_expr);
+    Offset(const Expr *offset_expr);
     virtual ~Offset();
     virtual int16_t val() const;
     virtual const std::string gen() const;
 protected:
-    Expr *m_offset_expr;
+    const Expr *m_offset_expr;
 };
 
 class UnaryOffset : public Op, public Offset
 {
 public:
-    UnaryOffset(CompLexer::Token *tok, Offset *offset_expr);
+    UnaryOffset(const CompLexer::Token *tok, const Offset *offset_expr);
     virtual ~UnaryOffset();
     virtual int16_t val() const;
 };
@@ -140,7 +134,7 @@ public:
 class ArithCmd : public Cmd
 {
 public:
-    ArithCmd(CompLexer::Token *tok);
+    ArithCmd(const CompLexer::Token *tok);
     virtual ~ArithCmd();
     virtual const std::string gen() const;
 };
@@ -148,40 +142,41 @@ public:
 class TrigCmd : public Cmd
 {
 public:
-    TrigCmd(CompLexer::Token *tok, Reg *reg);
+    TrigCmd(const CompLexer::Token *tok, const Reg *reg);
     virtual ~TrigCmd();
     virtual const std::string gen() const;
 private:
-    Reg *m_reg;
+    const Reg *m_reg;
 };
 
 class LoadRegCmd : public Cmd
 {
 public:
-    LoadRegCmd(CompLexer::Token *tok, Reg *reg);
+    LoadRegCmd(const CompLexer::Token *tok, const Reg *reg);
     virtual ~LoadRegCmd();
     virtual const std::string gen() const;
 private:
-    Reg *m_reg;
+    const Reg *m_reg;
 };
+
 class LoadMemCmd : public Cmd
 {
 public:
-    LoadMemCmd(CompLexer::Token *tok, Offset *offset);
+    LoadMemCmd(const CompLexer::Token *tok, const Offset *offset);
     virtual ~LoadMemCmd();
     virtual const std::string gen() const;
 private:
-    Offset *m_offset;
+    const Offset *m_offset;
 };
 
 class LoadRealCmd : public Cmd
 {
 public:
-    LoadRealCmd(CompLexer::Token *tok, Real *constant);
+    LoadRealCmd(const CompLexer::Token *tok, const Real *constant);
     virtual ~LoadRealCmd();
     virtual const std::string gen() const;
 private:
-    Real *m_const;
+    const Real *m_const;
 };
 
 }

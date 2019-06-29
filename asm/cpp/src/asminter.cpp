@@ -5,7 +5,7 @@
 
 using namespace AsmInter;
 
-Seq::Seq(Stmt *stmt1, Stmt *stmt2) :
+Seq::Seq(const Stmt *stmt1, const Stmt *stmt2) :
     Stmt(), m_stmt1(stmt1), m_stmt2(stmt2)
 {
 }
@@ -34,7 +34,7 @@ Expr::gen() const
     return std::string("");
 }
 
-Op::Op(CompLexer::Token *tok) :
+Op::Op(const CompLexer::Token *tok) :
     m_tok(tok)
 {
 }
@@ -49,7 +49,7 @@ Op::gen() const
     return m_tok->val();
 }
 
-Real::Real(CompLexer::Token *tok) :
+Real::Real(const CompLexer::Token *tok) :
     Op(tok)
 {
 }
@@ -64,7 +64,7 @@ Real::val() const
     return std::stod(gen());
 }
 
-Cmd::Cmd(CompLexer::Token *tok) :
+Cmd::Cmd(const CompLexer::Token *tok) :
     Stmt(), m_tok(tok)
 {
 }
@@ -99,7 +99,7 @@ Cmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-Label::Label(CompLexer::Token *tok) :
+Label::Label(const CompLexer::Token *tok) :
     m_tok(tok)
 {
 }
@@ -111,41 +111,26 @@ Label::~Label()
 const std::string
 Label::gen() const
 {
-    return "\t" + m_tok->val() + "D\n";
-}
-
-UndefLabel::UndefLabel(CompLexer::Token *tok) :
-    Label(tok)
-{
-}
-
-UndefLabel::~UndefLabel()
-{
-}
-
-
-const std::string
-UndefLabel::gen() const
-{
     return "\t" + m_tok->val() + "U\n";
 }
 
-HeaderLable::HeaderLable(CompLexer::Token *tok) :
-    Label(tok)
+DefinedLabel::DefinedLabel(const CompLexer::Token *tok,
+                           int16_t offset) :
+    Label(tok), m_offset(offset)
 {
 }
 
-HeaderLable::~HeaderLable()
+DefinedLabel::~DefinedLabel()
 {
 }
 
 const std::string
-HeaderLable::gen() const
+DefinedLabel::gen() const
 {
-    return "\t" + m_tok->val() + " H\n";
+    return "\t" + m_tok->val() + " D " + std::to_string(m_offset) + "\n";
 }
 
-LabelSeq::LabelSeq(Stmt *lbl) :
+LabelSeq::LabelSeq(const Stmt *lbl) :
     m_lbl(lbl), m_seq(nullptr)
 {
 }
@@ -182,7 +167,7 @@ LabelSeq::push_label(Stmt *lbl)
     }
 }
 
-Obj::Obj(Stmt *stmt, LabelSeq *lbl_seq) :
+Obj::Obj(const Stmt *stmt, LabelSeq *lbl_seq) :
     m_stmt(stmt), m_lbl_seq(lbl_seq)
 {
 }
@@ -213,7 +198,7 @@ Obj::cmd_test() const
 }
 #endif // __ASM_PARSER_TEST__
 
-Reg::Reg(CompLexer::Token *tok) :
+Reg::Reg(const CompLexer::Token *tok) :
     Op(tok)
 {
 }
@@ -228,7 +213,7 @@ Reg::val() const
     return std::stoul(gen());
 }
 
-Offset::Offset(Expr *offset_expr) :
+Offset::Offset(const Expr *offset_expr) :
     m_offset_expr(offset_expr)
 {
 }
@@ -250,7 +235,7 @@ Offset::gen() const
     return m_offset_expr->gen();
 }
 
-UnaryOffset::UnaryOffset(CompLexer::Token *tok, Offset *offset_expr) :
+UnaryOffset::UnaryOffset(const CompLexer::Token *tok, const Offset *offset_expr) :
     Op(tok), Offset(offset_expr)
 {
 }
@@ -266,7 +251,7 @@ UnaryOffset::val() const
     return -std::stoi(m_offset_expr->gen());
 }
 
-ArithCmd::ArithCmd(CompLexer::Token *tok) :
+ArithCmd::ArithCmd(const CompLexer::Token *tok) :
     Cmd(tok)
 {
 }
@@ -334,7 +319,7 @@ ArithCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-TrigCmd::TrigCmd(CompLexer::Token *tok, Reg *reg) :
+TrigCmd::TrigCmd(const CompLexer::Token *tok, const Reg *reg) :
     Cmd(tok), m_reg(reg)
 {
 }
@@ -386,7 +371,7 @@ TrigCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-LoadRegCmd::LoadRegCmd(CompLexer::Token *tok, Reg *reg) :
+LoadRegCmd::LoadRegCmd(const CompLexer::Token *tok, const Reg *reg) :
     Cmd(tok), m_reg(reg)
 {
 }
@@ -413,7 +398,7 @@ LoadRegCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-LoadMemCmd::LoadMemCmd(CompLexer::Token *tok, Offset *offset) :
+LoadMemCmd::LoadMemCmd(const CompLexer::Token *tok, const Offset *offset) :
     Cmd(tok), m_offset(offset)
 {
 }
@@ -440,7 +425,7 @@ LoadMemCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-LoadRealCmd::LoadRealCmd(CompLexer::Token *tok, Real *constant) :
+LoadRealCmd::LoadRealCmd(const CompLexer::Token *tok, const Real *constant) :
     Cmd(tok), m_const(constant)
 {
 }

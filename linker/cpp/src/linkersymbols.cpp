@@ -2,8 +2,8 @@
 
 using namespace LinkerSymbols;
 
-SymLink::SymLink(const CompLexer::Token *tok, SymTag tag) :
-    Sym(tok), m_tag(tag)
+SymLink::SymLink(const std::string &id, SymTag tag) :
+    Sym(id), m_tag(tag)
 {
 }
 
@@ -23,8 +23,8 @@ SymLink::offset() const
     return 0;
 }
 
-DefinedSymLink::DefinedSymLink(const CompLexer::Token *tok, int16_t offset) :
-    SymLink(tok, SymTag::DEFINED), m_offset(offset)
+DefinedSymLink::DefinedSymLink(const std::string &id, int16_t offset) :
+    SymLink(id, SymTag::DEFINED), m_offset(offset)
 {
 }
 
@@ -39,7 +39,7 @@ DefinedSymLink::offset() const
 }
 
 Env::Env() :
-    m_tab(new Containers::Table<SymLink>(3))
+    m_tab(new Containers::Table<const LinkerInter::Sym>(3))
 {
 }
 
@@ -48,7 +48,7 @@ Env::~Env()
     delete m_tab;
 }
 
-const SymLink *
+const LinkerInter::Sym *
 Env::get(const CompLexer::Token *tok) const
 {
     return m_tab->get(tok->val());
@@ -56,7 +56,7 @@ Env::get(const CompLexer::Token *tok) const
 
 void
 Env::set(const CompLexer::Token *tok,
-    const SymLink *sym)
+    const LinkerInter::Sym *sym)
 {
     m_tab->set(sym, tok->val());
 }

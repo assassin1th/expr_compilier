@@ -23,6 +23,7 @@ private:
     CompLexer::Lexer *m_lex;
     AsmInter::LabelSeq *m_lbl_seq;
     Symbols::Env *m_env;
+    int16_t m_offset;
     Inter::Stmt *stmts();
     Inter::Stmt *stmt();
     Inter::Stmt *label();

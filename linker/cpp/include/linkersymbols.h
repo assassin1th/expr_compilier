@@ -14,7 +14,7 @@ enum SymTag
 class SymLink : public LinkerInter::Sym
 {
 public:
-    SymLink(const CompLexer::Token *tok,
+    SymLink(const std::string &tok,
             SymTag tag = SymTag::UNDEFINED);
     virtual ~SymLink();
     virtual int16_t offset() const;
@@ -26,7 +26,7 @@ private:
 class DefinedSymLink : public SymLink
 {
 public:
-    DefinedSymLink(const CompLexer::Token *tok, int16_t offset);
+    DefinedSymLink(const std::string &tok, int16_t offset);
     virtual ~DefinedSymLink();
     virtual int16_t offset() const;
 private:
@@ -39,11 +39,11 @@ class Env
 public:
     Env();
     ~Env();
-    const SymLink *get(const CompLexer::Token *tok) const;
+    const LinkerInter::Sym *get(const CompLexer::Token *tok) const;
     void set(const CompLexer::Token *tok,
-                       const SymLink *sym);
+                       const LinkerInter::Sym *sym);
 private:
-    Containers::Table<SymLink> *m_tab;
+    Containers::Table<const LinkerInter::Sym> *m_tab;
 };
 
 

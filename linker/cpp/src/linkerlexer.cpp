@@ -26,6 +26,15 @@ Lexer::~Lexer()
 {
 }
 
+Bytes::Bytes(const std::string &bytes) :
+    CompLexer::Word(Tag::BYTES, bytes)
+{
+}
+
+Bytes::~Bytes()
+{
+}
+
 CompLexer::Token *
 Lexer::scan()
 {

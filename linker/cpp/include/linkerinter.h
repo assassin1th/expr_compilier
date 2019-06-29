@@ -23,10 +23,23 @@ public:
     virtual size_t size() const;
 };
 
+class Offset : public Code
+{
+public:
+    Offset(const std::string &offset);
+    virtual ~Offset();
+    virtual const std::string gen() const;
+    virtual const Code *reduce(LinkerObject::SymTable *symtab,
+                               int16_t offset) const;
+    virtual size_t size() const;
+private:
+    const std::string m_offset;
+};
+
 class ByteCode : public Code
 {
 public:
-    ByteCode(const std::string &bytes);
+    ByteCode(const std::string bytes);
     virtual ~ByteCode();
     virtual const std::string gen() const;
     virtual const Code *reduce(LinkerObject::SymTable *sym,
@@ -39,15 +52,15 @@ private:
 class Sym : public Code
 {
 public:
-    Sym(const CompLexer::Token *tok);
+    Sym(const std::string &id);
     virtual ~Sym();
     virtual const std::string gen() const;
     virtual const Code *reduce(LinkerObject::SymTable *sym,
                                int16_t offset) const;
-    const CompLexer::Token *tok() const;
+    const std::string &id() const;
     virtual size_t size() const;
 protected:
-    const CompLexer::Token *m_tok;
+    const std::string m_id;
 };
 
 class SymCode : public Code

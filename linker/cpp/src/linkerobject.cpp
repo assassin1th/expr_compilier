@@ -41,7 +41,7 @@ SymTable::solve(SymTable *st,
 const LinkerSymbols::SymLink *
 SymTable::get_sym(const LinkerInter::Sym *sym) const
 {
-    const auto &n = m_tab->find(sym->tok()->val());
+    const auto &n = m_tab->find(sym->id())
     if (n != m_tab->end() &&
         n.second->tag() == LinkerSymbols::SymTag::DEFINED)
     {
@@ -53,9 +53,9 @@ SymTable::get_sym(const LinkerInter::Sym *sym) const
 int
 SymTable::set_sym(const LinkerSymbols::SymLink *sl)
 {
-    if (m_tab->find(sl->tok()->val()) == m_tab->end())
+    if (m_tab->find(sl->id()) == m_tab->end())
     {
-        m_tab[sl->tok()->val()] = sl;
+        m_tab[sl->id()] = sl;
         return 0;
     }
     return -1;

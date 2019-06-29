@@ -9,7 +9,7 @@ namespace LinkerLexer {
 
 enum Tag
 {
-    ID = 256, NUMBER
+    ID = 256, NUMBER, SYMTAB, BYTES, DEFFLAG, UNDEFFLAG
 };
 
 class Number : public CompLexer::Token
@@ -20,6 +20,13 @@ public:
     virtual const std::string &val() const;
 private:
     const std::string m_num;
+};
+
+class Bytes : public CompLexer::Word
+{
+public:
+    Bytes(const std::string &bytes);
+    ~Bytes();
 };
 
 class Lexer : public CompLexer::Lexer

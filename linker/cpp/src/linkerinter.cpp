@@ -30,8 +30,37 @@ Code::reduce(LinkerObject::SymTable *sym,
     return this;
 }
 
+Offset::Offset(const std::string &offset) :
+    m_offset(offset)
+{
+}
 
-ByteCode::ByteCode(const std::string &bytes) :
+Offset::~Offset()
+{
+}
+
+const std::string
+Offset::gen() const
+{
+    int16_t offset = std::stoi(m_offset);
+    return std::string((char *) &offset, sizeof (offset));
+}
+
+const Code *
+Offset::reduce(LinkerObject::SymTable *symtab,
+               int16_t offset) const
+{
+    return new Offset(m_offset);
+}
+
+size_t
+Offset::size() const
+{
+    return sizeof (int16_t);
+}
+
+
+ByteCode::ByteCode(const std::string bytes) :
     Code(), m_bytes(bytes)
 {
 }
@@ -59,8 +88,8 @@ ByteCode::size() const
     return m_bytes.size();
 }
 
-Sym::Sym(const CompLexer::Token *tok) :
-    Code(), m_tok(tok)
+Sym::Sym(const std::string &id) :
+    Code(), m_id(id)
 {
 }
 
@@ -79,19 +108,19 @@ Sym::reduce(LinkerObject::SymTable *sym,
             int16_t offset) const
 {
     offset = sym->get_sym(this)->offset() - offset;
-    return new ByteCode(std::string((char *) &offset, sizeof (int16_t)));
+    return new Offset(std::string((char *) &offset, sizeof (offset)));
 }
 
-const CompLexer::Token *
-Sym::tok() const
+const std::string &
+Sym::id() const
 {
-    return m_tok;
+    return m_id;
 }
 
 size_t
 Sym::size() const
 {
-    return sizeof(int16_t);
+    return sizeof (int16_t);
 }
 
 SymCode::SymCode(const Code *code, const Sym *sym) :

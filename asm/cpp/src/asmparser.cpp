@@ -11,7 +11,7 @@ using namespace AsmParser;
 using Inter::Stmt;
 
 Parser::Parser(CompLexer::Lexer *lex) :
-    m_lex(lex), m_env(new Symbols::Env)
+    m_lex(lex), m_env(new Symbols::Env), m_offset(0)
 {
     using CompLexer::Word;
     using AsmLexer::Tag;
@@ -94,17 +94,17 @@ Parser::label()
 {
     using CompLexer::Token;
     using CompLexer::Tag;
-    using AsmInter::HeaderLable;
-    using AsmInter::UndefLabel;
+    using AsmInter::Label;
+    using AsmInter::DefinedLabel;
 
     Token *id = m_look;
     match(Tag::ID);
     if (m_look->tag() == ':')
     {
         move();
-        return new HeaderLable(id);
+        return new DefinedLabel(id, m_offset);
     }
-    return new UndefLabel(id);
+    return new Label(id);
 }
 
 Stmt *
@@ -141,6 +141,7 @@ Parser::arith_cmd()
         case Tag::LOG: case Tag::LOGR: case Tag::POW: case Tag::POWR:
             x = new ArithCmd(m_look);
             move();
+            m_offset += sizeof (arith_cmd_t);
             return x;
     }
     return trig_cmd();
@@ -160,6 +161,7 @@ Parser::trig_cmd()
         case Tag::ASIN: case Tag::ACOS: case Tag::ATAN: case Tag::ACTAN:
             tok = m_look;
             move();
+            m_offset += sizeof (trig_cmd_t);
             return new TrigCmd(tok, reg());
     }
     return ld_cmd();
@@ -200,16 +202,19 @@ Parser::ld_cmd()
                 move();
                 Stmt *x = new LoadMemCmd(tok, offset());
                 match(']');
+                m_offset += sizeof (ld_cmd_mem_t);
                 return x;
             }
             else if (m_look->tag() == Tag::REG)
             {
                 move();
+                m_offset += sizeof (ld_cmd_reg_t);
                 return new LoadRegCmd(tok, reg());
             }
             else if (m_look->tag() == CompLexer::Tag::REAL)
             {
                 move();
+                m_offset += sizeof (ld_cmd_real_t);
                 return new LoadRealCmd(tok, new Real(m_look));
             }
             else
@@ -278,6 +283,7 @@ Parser::cmd()
     {
         case Tag::END: case Tag::POP: case Tag::RET:
             stmt = new Cmd(m_look);
+            m_offset += sizeof (cmd_t);
             break;
         default:
             std::cerr << "unexpected sym" << std::endl
