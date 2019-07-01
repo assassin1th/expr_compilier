@@ -26,6 +26,8 @@ Parser::move()
 void
 Parser::match(int tag)
 {
+
+    std::cerr << "hello1" << std::endl;
     if (m_look->tag() != tag)
     {
         std::cerr << __FILE__ << ": " << __LINE__ << ":\n" <<
@@ -58,6 +60,7 @@ Parser::symtab()
             env->set(m_look, new LinkerInter::Sym(m_look->val()));
             st->set_sym(symlink());
         }
+
     }
     return st;
 }
@@ -67,14 +70,22 @@ Parser::symlink()
 {
     CompLexer::Token *id = m_look;
     match(LinkerLexer::Tag::ID);
+
+    std::cerr << "hello" << std::endl;
     if (m_look->tag() == LinkerLexer::Tag::DEFFLAG)
     {
-        CompLexer::Token *offset = m_look;
+        move();
+        CompLexer::Token *num = m_look;
+        if (num == nullptr)
+        {
+            std::cerr << "nullptr" << std::endl;
+        }
         match(LinkerLexer::Tag::NUMBER);
-        return new LinkerSymbols::DefinedSymLink(id->val(), std::stoi(offset->val()));
+        return new LinkerSymbols::DefinedSymLink(id->val(), std::stoi(num->val()));
     }
     else
     {
+        move();
         return new LinkerSymbols::SymLink(id->val());
     }
 }
@@ -100,6 +111,7 @@ Parser::code()
     const LinkerInter::Code *code = symcode();
     while (m_look->tag() != '\0')
     {
+        std::cerr << m_look->tag();
         code = new LinkerInter::CodeSeq(code, symcode());
     }
     return code;
@@ -121,11 +133,12 @@ const LinkerInter::Code *
 Parser::objcode()
 {
     std::string buf;
-    while (m_look->tag() != LinkerLexer::Tag::ID)
+    do
     {
         buf += m_look->val();
         move();
     }
+    while (m_look->tag() != LinkerLexer::Tag::ID);
     return new LinkerInter::ByteCode(buf);
 }
 

@@ -2,7 +2,8 @@
 
 using namespace LinkerObject;
 
-SymTable::SymTable()
+SymTable::SymTable() :
+    m_tab()
 {
 }
 
@@ -25,14 +26,14 @@ SymTable::solve(SymTable *st,
     {
         if (n.second->tag() == LinkerSymbols::SymTag::UNDEFINED)
         {
-            ObjectFile *file = objs->find_object_file(n.second);
+            const ObjectFile *file = objs->find_object_file(n.second);
             code = new LinkerInter::CodeTmpSeq(code,
                                                file->solve(st, objs, offset + block_size));
         }
         else if (n.second->tag() == LinkerSymbols::SymTag::DEFINED)
         {
-            st->set_sym(new LinkerSymbols::DefinedSymLink(n.second->tok(),
-                                                          n.secons->offset() + offset));
+            st->set_sym(new LinkerSymbols::DefinedSymLink(n.second->id(),
+                                                          n.second->offset() + offset));
         }
     }
     return code;
@@ -41,11 +42,11 @@ SymTable::solve(SymTable *st,
 const LinkerSymbols::SymLink *
 SymTable::get_sym(const LinkerInter::Sym *sym) const
 {
-    const auto &n = m_tab->find(sym->id())
-    if (n != m_tab->end() &&
-        n.second->tag() == LinkerSymbols::SymTag::DEFINED)
+    const auto &n = m_tab.find(sym->id());
+    if (n != m_tab.end() &&
+        n->second->tag() == LinkerSymbols::SymTag::DEFINED)
     {
-        return n.second;
+        return n->second;
     }
     return nullptr;
 }
@@ -53,7 +54,7 @@ SymTable::get_sym(const LinkerInter::Sym *sym) const
 int
 SymTable::set_sym(const LinkerSymbols::SymLink *sl)
 {
-    if (m_tab->find(sl->id()) == m_tab->end())
+    if (m_tab.find(sl->id()) == m_tab.end())
     {
         m_tab[sl->id()] = sl;
         return 0;
@@ -131,7 +132,7 @@ Objects::~Objects()
 }
 
 int
-Objects::add(ObjectFile *obj_file)
+Objects::add(const ObjectFile *obj_file)
 {
     m_files.push_back(obj_file);
 }

@@ -23,7 +23,7 @@ public:
     const LinkerSymbols::SymLink *get_sym(const LinkerInter::Sym *sym) const;
     int set_sym(const LinkerSymbols::SymLink *sl);
 private:
-    std::unordered_map<const std::string, LinkerSymbols::SymLink *> m_tab;
+    std::unordered_map<std::string, const LinkerSymbols::SymLink *> m_tab;
 };
 
 class ObjectHeader
@@ -59,10 +59,10 @@ class Objects
 public:
     Objects();
     ~Objects();
-    int add(ObjectFile *obj_file);
+    int add(const ObjectFile *obj_file);
     const ObjectFile *find_object_file(const LinkerInter::Sym *sym) const;
 private:
-    std::vector<ObjectFile *> m_files;
+    std::vector<const ObjectFile *> m_files;
 };
 
 }

@@ -6,32 +6,32 @@ using Inter::Id;
 using CompLexer::Token;
 
 Env::Env() :
-    m_tab(new Table<Id>), m_prev(nullptr)
+    m_prev(nullptr)
 {
 }
 
 Env::~Env()
 {
     delete m_prev;
-    delete m_tab;
 }
 
 
 void
-Env::set(Token *w, Id *i)
+Env::set(const std::shared_ptr<Token> &w,
+         const std::shared_ptr<Id> &i)
 {
-    m_tab = m_tab->set(i, w->val());
+    m_tab[w->val()] = i;
 }
 
-Id *
-Env::get(Token *w)
+const std::shared_ptr<Id>
+Env::get(const std::shared_ptr<Token> &w)
 {
     for (Env *e = this; e != nullptr; e = e->m_prev)
     {
-        Id *i = m_tab->get(w->val());
-        if (i != nullptr)
+        TABLE_TYPE::iterator it = m_tab.find(w->val());
+        if (it != m_tab.end())
         {
-            return i;
+            return it->second;
         }
     }
     return nullptr;

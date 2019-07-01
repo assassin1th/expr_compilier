@@ -1,4 +1,5 @@
 #include "comp/cpp/include/lexer.h"
+#include "test/cpp/include/test.h"
 #include <ctype.h>
 #include <iostream>
 
@@ -60,12 +61,11 @@ Real::val() const
 Lexer::Lexer(const std::string &src) :
     m_src_str(src), m_peek(m_src_str.begin())
 {
-    m_tab = new Containers::Table<Token>();
+
 }
 
 Lexer::~Lexer()
 {
-    delete m_tab;
 }
 
 void
@@ -87,10 +87,10 @@ Lexer::readch(int c)
 void
 Lexer::reserve(Token *tok, const std::string &key)
 {
-    m_tab->set(tok, key);
+    m_tab[key] = std::shared_ptr<Token> (tok);
 }
 
-Token *
+std::shared_ptr<Token>
 Lexer::scan()
 {
     for (;;readch())
@@ -110,13 +110,15 @@ Lexer::scan()
             readch();
         } while (isalnum(*m_peek));
 
-        Token *w = m_tab->get(buf);
+        TABLE_TYPE::iterator it = m_tab.find(buf);
 
-        if (w != nullptr) {
+        if (it == m_tab.end()) {
+            std::shared_ptr<Token> w (new Word(Tag::ID, buf));
+            m_tab[buf] = w;
             return w;
         }
-        m_tab->set(w = new Word(Tag::ID, buf), buf);
-        return w;
+
+        return it->second;
     } else if (isdigit(*m_peek)) {
         do {
             buf.push_back(*m_peek);
@@ -130,26 +132,26 @@ Lexer::scan()
                 readch();
             } while (isdigit(*m_peek));
         }
-        Token *r = m_tab->get(buf);
-
-        if (r != nullptr)
+        TABLE_TYPE::iterator it = m_tab.find(buf);
+        if (it == m_tab.end())
         {
+            std::shared_ptr<Token> r (new Real(buf));
+            m_tab[buf] = r;
             return r;
         }
-        m_tab->set(r = new Real(buf), buf);
-        return r;
+        return it->second;
     }
     buf.push_back(*m_peek);
-    Token *t = m_tab->get(buf);
-    if (t != nullptr)
+    TABLE_TYPE::iterator it = m_tab.find(buf);
+    if (it == m_tab.end())
     {
+        std::shared_ptr<Token> t(new Token(*m_peek));
+        m_tab[buf] = t;
         readch();
         return t;
     }
-    m_tab->set(t = new Token(*m_peek), buf);
-
     readch();
-    return t;
+    return it->second;
 }
 
 #ifdef __COMP_LEXER_TEST__
@@ -157,7 +159,7 @@ const std::string
 Lexer::test()
 {
     std::string result;
-    for (Token *t = scan(); t->tag() != '\0'; t = scan())
+    for (std::shared_ptr<Token> t = scan(); t->tag() != '\0'; t = scan())
     {
         result += "<" + t->val() + " | ";
         switch (t->tag())

@@ -1,4 +1,5 @@
 #include "comp/cpp/include/inter.h"
+#include "test/cpp/include/test.h"
 #define MIN(x, y) ((x < y) ? x : y)
 using namespace Inter;
 using CompLexer::Token;
@@ -14,27 +15,30 @@ Stmt::~Stmt()
 const std::string
 Stmt::gen() const
 {
+    TEST_MSG({}, "gen method of Inter::Stmt class");
     return "";
 }
 
-FuncDecl::FuncDecl(Token *id, Stmt *func_expr):
+FuncDecl::FuncDecl(const std::shared_ptr<Token> &id,
+                   const std::shared_ptr<Stmt> &func_expr):
     Stmt(), m_id(id), m_func_expr(func_expr)
 {
 }
 
 FuncDecl::~FuncDecl()
 {
-    delete m_func_expr;
 }
 
 
 const std::string
 FuncDecl::gen() const
 {
+    TEST_MSG({},
+             "gen method of Inter::FuncDecl class");
     return m_id->val() + ":\n" + m_func_expr->gen();
 }
 
-Expr::Expr(Token *op, int n_reg) :
+Expr::Expr(const std::shared_ptr<Token> &op, int n_reg) :
     m_n_reg(n_reg), m_op(op)
 {
 }
@@ -49,7 +53,7 @@ Expr::n_reg() const
     return m_n_reg;
 }
 
-Id::Id(Token *w, unsigned long d) :
+Id::Id(const std::shared_ptr<Token> &w, unsigned long d) :
     Expr(w, 1), m_offset(d)
 {
 }
@@ -61,10 +65,12 @@ Id::~Id()
 const std::string
 Id::gen() const
 {
+    TEST_MSG({},
+             "gen method of Id class");
     return "\tFLD [-" + std::to_string(m_offset) + "]\n";
 }
 
-Op::Op(Token *op, int n_reg) :
+Op::Op(const std::shared_ptr<Token> &op, int n_reg) :
     Expr(op, n_reg)
 {
 }
@@ -73,24 +79,28 @@ Op::~Op()
 {
 }
 
-Unary::Unary(Token *op, Expr *expr) :
+Unary::Unary(const std::shared_ptr<Token> &op,
+             const std::shared_ptr<Expr> &expr) :
     Op(op, expr->n_reg()), m_expr(expr)
 {
 }
 
 Unary::~Unary()
 {
-    delete m_expr;
 }
 
 const std::string
 Unary::gen() const
 {
+    TEST_MSG({},
+             "gen method of Inter::Unary class");
     return m_expr->gen();
 }
 
 
-Arith::Arith(Token *op, Expr *lexpr, Expr *rexpr) :
+Arith::Arith(const std::shared_ptr<Token> &op,
+             const std::shared_ptr<Expr> &lexpr,
+             const std::shared_ptr<Expr> &rexpr) :
     Op(op, MIN(lexpr->n_reg(), rexpr->n_reg()) + 1),
     m_lexpr(lexpr), m_rexpr(rexpr)
 {
@@ -98,8 +108,6 @@ Arith::Arith(Token *op, Expr *lexpr, Expr *rexpr) :
 
 Arith::~Arith()
 {
-    delete m_lexpr;
-    delete m_rexpr;
 }
 
 const std::string
@@ -109,22 +117,28 @@ Arith::gen() const
     switch (m_op->tag())
     {
         case '+':
-            res += "FSUM";
+            TEST_MSG(res += "FSUM",
+                     "In gen method of Inter::Arith class");
             break;
         case '-':
-            res += "FSUB";
+            TEST_MSG(res += "FSUB",
+                     "In gen method of Inter::Arith class");
             break;
         case '*':
-            res += "FMUL";
+            TEST_MSG(res += "FMUL",
+                     "In gen method of Inter::Arith class");
             break;
         case '/':
-            res += "FDIV";
+            TEST_MSG(res += "FDIV",
+                     "In gen method of Inter::Arith class");
             break;
         case '^':
-            res += "FPOW";
+            TEST_MSG(res += "FPOW",
+                     "In gen method of Inter::Arith class");
             break;
         case CompLexer::Tag::LOG:
-            res += "FLOG";
+            TEST_MSG(res += "FLOG",
+                     "In gen method of Inter::Arith class");
             break;
     }
 
@@ -136,7 +150,7 @@ Arith::gen() const
 }
 
 
-Constant::Constant(Token *op) :
+Constant::Constant(const std::shared_ptr<Token> &op) :
     Expr(op, 1), m_val(atof(op->val().c_str()))
 {
 }
@@ -148,17 +162,19 @@ Constant::~Constant()
 const std::string
 Constant::gen() const
 {
+    TEST_MSG({},
+             "In gen method of Inter::Constant class");
     return "\tFLD " + std::to_string(m_val) + "\n";
 }
 
-Trig::Trig(CompLexer::Token *op, Expr *expr):
+Trig::Trig(const std::shared_ptr <CompLexer::Token> &op,
+           const std::shared_ptr <Expr> &expr):
     Op(op, expr->n_reg()), m_expr(expr)
 {
 }
 
 Trig::~Trig()
 {
-    delete m_expr;
 }
 
 const std::string
@@ -169,34 +185,43 @@ Trig::gen() const
     switch (m_op->tag())
     {
         case Tag::COS:
-            res += "FCOS ST0";
+            TEST_MSG(res += "FCOS ST0",
+                     "In gen method of Inter::Trig class");
             break;
         case Tag::SIN:
-            res += "FSIN ST0";
+            TEST_MSG(res += "FCOS ST0",
+                     "In gen method of Inter::Trig class");
             break;
         case Tag::TAN:
-            res += "FTAN ST0";
+            TEST_MSG(res += "FCOS ST0",
+                     "In gen method of Inter::Trig class");
             break;
         case Tag::CTAN:
-            res += "FCTAN ST0";
+            TEST_MSG(res += "FCOS ST0",
+                     "In gen method of Inter::Trig class");
             break;
         case Tag::ACOS:
-            res += "FACOS ST0";
+            TEST_MSG(res += "FCOS ST0",
+                     "In gen method of Inter::Trig class");
             break;
         case Tag::ASIN:
-            res += "FASIN ST0";
+            TEST_MSG(res += "FCOS ST0",
+                     "In gen method of Inter::Trig class");
             break;
         case Tag::ATAN:
-            res += "FATAN ST0";
+            TEST_MSG(res += "FCOS ST0",
+                     "In gen method of Inter::Trig class");
             break;
         case Tag::ACTAN:
-            res += "FACTAN ST0";
+            TEST_MSG(res += "FCOS ST0",
+                     "In gen method of Inter::Trig class");
             break;
     }
     return m_expr->gen() + res + "\n";
 }
 
-Call::Call(Token *op, std::vector<Expr *> &args) :
+Call::Call(const std::shared_ptr<Token> &op,
+           std::vector<std::shared_ptr<Expr> > &args) :
     Op(op), m_args(args)
 {
 }
@@ -208,5 +233,8 @@ Call::~Call()
 const std::string
 Call::gen() const
 {
+
+    TEST_MSG({},
+             "In gen method of Inter::Call class");
     return "";
 }

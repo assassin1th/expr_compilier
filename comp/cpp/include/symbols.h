@@ -5,6 +5,8 @@
 #include "lexer.h"
 #include "inter.h"
 
+#define TABLE_TYPE std::unordered_map<std::string, std::shared_ptr<Inter::Id>>
+
 namespace Symbols
 {
 
@@ -13,10 +15,11 @@ class Env
 public:
     Env();
     ~Env();
-    void set(CompLexer::Token *w, Inter::Id *i);
-    Inter::Id *get(CompLexer::Token *w);
+    void set(const std::shared_ptr<CompLexer::Token> &w,
+             const std::shared_ptr<Inter::Id> &i);
+    const std::shared_ptr<Inter::Id> get(const std::shared_ptr<CompLexer::Token> &w);
 private:
-    Containers::Cont<Inter::Id> *m_tab;
+    TABLE_TYPE m_tab;
 protected:
     Env *m_prev;
 };

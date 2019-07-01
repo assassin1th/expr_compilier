@@ -1,5 +1,6 @@
 #include "linker/cpp/include/linkerinter.h"
 #include "linker/cpp/include/linkerobject.h"
+#include "test/cpp/include/test.h"
 
 using namespace LinkerInter;
 
@@ -14,6 +15,9 @@ Code::~Code()
 const std::string
 Code::gen() const
 {
+
+    TEST_MSG({},
+             "In gen Method of LinkerInter::Code class");
     return "";
 }
 
@@ -42,6 +46,8 @@ Offset::~Offset()
 const std::string
 Offset::gen() const
 {
+    TEST_MSG({},
+             "In gen Method of LinkerInter::Offset class");
     int16_t offset = std::stoi(m_offset);
     return std::string((char *) &offset, sizeof (offset));
 }
@@ -72,6 +78,8 @@ ByteCode::~ByteCode()
 const std::string
 ByteCode::gen() const
 {
+    TEST_MSG({},
+             "In gen Method of LinkerInter::ByteCode class");
     return m_bytes;
 }
 
@@ -100,6 +108,8 @@ Sym::~Sym()
 const std::string
 Sym::gen() const
 {
+    TEST_MSG({},
+             "In gen Method of LinkerInter::Sym class");
     return "";
 }
 
@@ -137,6 +147,8 @@ SymCode::~SymCode()
 const std::string
 SymCode::gen() const
 {
+    TEST_MSG({},
+             "In gen Method of LinkerInter::SymCode class");
     return m_code->gen() + m_sym->gen();
 }
 
@@ -147,7 +159,6 @@ SymCode::reduce(LinkerObject::SymTable *symtab,
     const Code *pref = m_code->reduce(symtab, offset);
     offset += m_code->size();
     const Code *post = m_sym->reduce(symtab, offset);
-    offset += m_sym->size();
     return new CodeSeq(pref, post);
 }
 
@@ -171,6 +182,10 @@ CodeSeq::~CodeSeq()
 const std::string
 CodeSeq::gen() const
 {
+    TEST_MSG({},
+             "In gen Method of LinkerInter::CodeSeq class");
+
+    std::cerr << m_post_code->gen() << std::endl;
     return m_pref_code->gen() + m_post_code->gen();
 }
 
@@ -181,7 +196,6 @@ CodeSeq::reduce(LinkerObject::SymTable *symtab,
     const Code *pref = m_pref_code->reduce(symtab, offset);
     offset += m_pref_code->size();
     const Code *post = m_post_code->reduce(symtab, offset);
-    offset += m_post_code->size();
     return new CodeSeq(pref, post);
 }
 

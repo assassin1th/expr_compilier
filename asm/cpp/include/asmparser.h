@@ -15,26 +15,25 @@ class Parser
 public:
     Parser(CompLexer::Lexer *lex);
     ~Parser();
-    AsmInter::Obj *parse();
+    std::shared_ptr<AsmInter::Obj> parse();
 private:
     void move();
     void match(int tag);
-    CompLexer::Token *m_look;
+    std::shared_ptr<CompLexer::Token> m_look;
     CompLexer::Lexer *m_lex;
-    AsmInter::LabelSeq *m_lbl_seq;
-    Symbols::Env *m_env;
+    std::shared_ptr<AsmInter::LabelSeq> m_lbl_seq;
     int16_t m_offset;
-    Inter::Stmt *stmts();
-    Inter::Stmt *stmt();
-    Inter::Stmt *label();
-    Inter::Stmt *arith_cmd();
-    Inter::Stmt *trig_cmd();
-    Inter::Stmt *ld_cmd();
-    Inter::Stmt *call_cmd();
-    Inter::Stmt *cmd();
-    AsmInter::Reg *reg();
-    AsmInter::Offset *offset();
-    AsmInter::Expr *expr();
+    std::shared_ptr<Inter::Stmt> stmts();
+    std::shared_ptr<Inter::Stmt> stmt();
+    std::shared_ptr<Inter::Stmt> label();
+    std::shared_ptr<Inter::Stmt> arith_cmd();
+    std::shared_ptr<Inter::Stmt> trig_cmd();
+    std::shared_ptr<Inter::Stmt> ld_cmd();
+    std::shared_ptr<Inter::Stmt> call_cmd();
+    std::shared_ptr<Inter::Stmt> cmd();
+    std::shared_ptr<AsmInter::Reg> reg();
+    std::shared_ptr<AsmInter::Offset> offset();
+    std::shared_ptr<AsmInter::Expr> expr();
 };
 
 }

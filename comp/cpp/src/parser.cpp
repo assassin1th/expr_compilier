@@ -50,17 +50,17 @@ Parser::match(int tag)
     }
 }
 
-Inter::Stmt *
+std::shared_ptr<Inter::Stmt>
 Parser::parse()
 {
     return func();
 }
 
-Inter::Stmt *
+std::shared_ptr<Inter::Stmt>
 Parser::func()
 {
     using CompLexer::Tag;
-    Token *id = m_look;
+    std::shared_ptr<Token> id (m_look);
     match(Tag::ID);
     match('(');
     if (m_look->tag() != ')')
@@ -72,7 +72,8 @@ Parser::func()
                 {
                     std::cerr << "used: " << m_look->val() << std::endl;
                 } else {
-                    m_env->set(m_look, new Id(m_look, m_used));
+                    m_env->set(m_look,
+                               std::shared_ptr<Id> (new Id(m_look, m_used)));
                     m_used += sizeof(double);
                 }
                 move();
@@ -87,66 +88,66 @@ Parser::func()
     }
     move();
     match('=');
-    return new Inter::FuncDecl(id, expr());
+    return std::shared_ptr<Inter::Stmt> (new Inter::FuncDecl(id, expr()));
 }
 
-Expr *
+std::shared_ptr<Expr>
 Parser::expr()
 {
     using Inter::Arith;
-    Expr *x = term();
+    std::shared_ptr<Expr> x = term();
     while (m_look->tag() == '+' || m_look->tag() == '-')
     {
-        Token *tok = m_look;
+        std::shared_ptr<Token> tok = m_look;
         move();
-        x = new Arith(tok, x, term());
+        x = std::shared_ptr<Expr> (new Arith(tok, x, term()));
     }
     return x;
 }
 
-Expr *
+std::shared_ptr<Expr>
 Parser::term()
 {
     using Inter::Arith;
-    Expr *x = unary();
+    std::shared_ptr<Expr> x = unary();
     while (m_look->tag() == '*' || m_look->tag() == '/')
     {
-        Token *tok = m_look;
+        std::shared_ptr<Token> tok (m_look);
         move();
-        x = new Arith(tok, x, unary());
+        x = std::shared_ptr<Expr> (new Arith(tok, x, unary()));
     }
     return x;
 }
 
-Expr *
+std::shared_ptr<Expr>
 Parser::unary()
 {
     using Inter::Unary;
     if (m_look->tag() == '-')
     {
-        Token *tok = m_look;
+        std::shared_ptr<Token> tok (m_look);
         move();
-        return (new Unary(tok, unary()));
+        return (std::shared_ptr<Expr> (new Unary(tok, unary())));
     } else {
         return power();
     }
 }
 
-Expr *
+std::shared_ptr<Expr>
 Parser::power()
 {
     using Inter::Arith;
-    Expr *x = factor();
+    std::shared_ptr<Expr> x (factor());
     while (m_look->tag() == '^')
     {
-        Token *tok = m_look;
+        std::shared_ptr<Token> tok (m_look);
         move();
-        x = new Arith(tok, x, power());
+        x = std::shared_ptr<Expr> (new Arith(tok, x, power()));
     }
     return x;
 }
 
-Expr *
+std::shared_ptr<Expr>
 Parser::factor()
 {
     using CompLexer::Tag;
@@ -154,12 +155,12 @@ Parser::factor()
     using Inter::Trig;
     using Inter::Arith;
 
-    Expr *x = nullptr;
-    Token *id = nullptr;
+    std::shared_ptr<Expr> x (nullptr);
+    std::shared_ptr<Token> id (nullptr);
     switch (m_look->tag())
     {
         case Tag::REAL:
-            x = new Constant(m_look);
+            x = std::shared_ptr<Expr> (new Constant(m_look));
             move();
             break;
         case '(':
@@ -173,7 +174,7 @@ Parser::factor()
             id = m_look;
             move();
             match('(');
-            x = new Trig(id, expr());
+            x = std::shared_ptr<Expr> (new Trig(id, expr()));
             match(')');
             break;
         case Tag::LOG:
@@ -181,7 +182,7 @@ Parser::factor()
             match('(');
             x = expr();
             match(',');
-            x = new Arith(id, x, expr());
+            x = std::shared_ptr<Expr> (new Arith(id, x, expr()));
             match(')');
             break;
         case Tag::ID:
@@ -196,16 +197,16 @@ Parser::factor()
     return x;
 }
 
-Expr *
+std::shared_ptr<Expr>
 Parser::call()
 {
     using Inter::Call;
-    Token *tmp = m_look;
+    std::shared_ptr<Token> tmp = m_look;
     move();
     if (m_look->tag() == '(')
     {
         move();
-        std::vector<Expr *> args;
+        std::vector<std::shared_ptr<Expr>> args;
         if (m_look->tag() != ')')
         {
             do {
@@ -217,9 +218,9 @@ Parser::call()
                 match(',');
             } while (true);
         }
-        return new Call(tmp, args);
+        return std::shared_ptr<Expr> (new Call(tmp, args));
     } else {
-        Id *i = m_env->get(tmp);
+        std::shared_ptr<Expr> i = m_env->get(tmp);
         if (i == nullptr)
         {
             std::cerr << "undeclared variable: " << tmp->val() << std::endl;

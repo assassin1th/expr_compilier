@@ -50,7 +50,6 @@ Lexer::scan()
             break;
         }
     }
-
     if (isalpha(*m_peek))
     {
         do
@@ -81,7 +80,7 @@ Lexer::scan()
         CompLexer::Token *tok = m_tab->get(buffer);
         if (tok == nullptr)
         {
-            m_tab->set(new Number(buffer), buffer);
+            m_tab->set((tok = new Number(buffer)), buffer);
         }
 
         return tok;

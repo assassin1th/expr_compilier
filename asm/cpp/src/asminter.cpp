@@ -1,11 +1,13 @@
 #include "asm/cpp/include/asminter.h"
 #include "asm/cpp/include/asmlexer.h"
 #include <string>
+#include <iostream>
 #include "vm/c/include/cmd.h"
 
 using namespace AsmInter;
 
-Seq::Seq(const Stmt *stmt1, const Stmt *stmt2) :
+Seq::Seq(const std::shared_ptr<Stmt> &stmt1,
+         const std::shared_ptr<Stmt> &stmt2) :
     Stmt(), m_stmt1(stmt1), m_stmt2(stmt2)
 {
 }
@@ -34,7 +36,7 @@ Expr::gen() const
     return std::string("");
 }
 
-Op::Op(const CompLexer::Token *tok) :
+Op::Op(const std::shared_ptr<CompLexer::Token> &tok) :
     m_tok(tok)
 {
 }
@@ -49,7 +51,7 @@ Op::gen() const
     return m_tok->val();
 }
 
-Real::Real(const CompLexer::Token *tok) :
+Real::Real(const std::shared_ptr<CompLexer::Token> &tok) :
     Op(tok)
 {
 }
@@ -61,10 +63,11 @@ Real::~Real()
 double
 Real::val() const
 {
+    std::cerr << gen() << std::endl;
     return std::stod(gen());
 }
 
-Cmd::Cmd(const CompLexer::Token *tok) :
+Cmd::Cmd(const std::shared_ptr<CompLexer::Token> &tok) :
     Stmt(), m_tok(tok)
 {
 }
@@ -99,7 +102,7 @@ Cmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-Label::Label(const CompLexer::Token *tok) :
+Label::Label(const std::shared_ptr<CompLexer::Token> &tok) :
     m_tok(tok)
 {
 }
@@ -114,7 +117,7 @@ Label::gen() const
     return "\t" + m_tok->val() + "U\n";
 }
 
-DefinedLabel::DefinedLabel(const CompLexer::Token *tok,
+DefinedLabel::DefinedLabel(const std::shared_ptr<CompLexer::Token> &tok,
                            int16_t offset) :
     Label(tok), m_offset(offset)
 {
@@ -130,15 +133,13 @@ DefinedLabel::gen() const
     return "\t" + m_tok->val() + " D " + std::to_string(m_offset) + "\n";
 }
 
-LabelSeq::LabelSeq(const Stmt *lbl) :
+LabelSeq::LabelSeq(const std::shared_ptr<Stmt> &lbl) :
     m_lbl(lbl), m_seq(nullptr)
 {
 }
 
 LabelSeq::~LabelSeq()
 {
-    delete m_lbl;
-    delete m_seq;
 }
 
 const std::string
@@ -155,7 +156,7 @@ LabelSeq::gen() const
 }
 
 void
-LabelSeq::push_label(Stmt *lbl)
+LabelSeq::push_label(std::shared_ptr<Stmt> &lbl)
 {
     if (m_seq)
     {
@@ -163,19 +164,18 @@ LabelSeq::push_label(Stmt *lbl)
     }
     else
     {
-        m_seq = new LabelSeq(lbl);
+        m_seq = std::shared_ptr<LabelSeq>(new LabelSeq(lbl));
     }
 }
 
-Obj::Obj(const Stmt *stmt, LabelSeq *lbl_seq) :
+Obj::Obj(const std::shared_ptr<Stmt> &stmt,
+         std::shared_ptr<LabelSeq> &lbl_seq) :
     m_stmt(stmt), m_lbl_seq(lbl_seq)
 {
 }
 
 Obj::~Obj()
 {
-    delete m_lbl_seq;
-    delete m_stmt;
 }
 
 const std::string
@@ -198,7 +198,7 @@ Obj::cmd_test() const
 }
 #endif // __ASM_PARSER_TEST__
 
-Reg::Reg(const CompLexer::Token *tok) :
+Reg::Reg(const std::shared_ptr<CompLexer::Token> &tok) :
     Op(tok)
 {
 }
@@ -213,14 +213,13 @@ Reg::val() const
     return std::stoul(gen());
 }
 
-Offset::Offset(const Expr *offset_expr) :
+Offset::Offset(const std::shared_ptr<Expr> &offset_expr) :
     m_offset_expr(offset_expr)
 {
 }
 
 Offset::~Offset()
 {
-    delete m_offset_expr;
 }
 
 int16_t
@@ -235,14 +234,14 @@ Offset::gen() const
     return m_offset_expr->gen();
 }
 
-UnaryOffset::UnaryOffset(const CompLexer::Token *tok, const Offset *offset_expr) :
+UnaryOffset::UnaryOffset(const std::shared_ptr<CompLexer::Token> &tok,
+                         const std::shared_ptr<Offset> &offset_expr) :
     Op(tok), Offset(offset_expr)
 {
 }
 
 UnaryOffset::~UnaryOffset()
 {
-    delete m_offset_expr;
 }
 
 int16_t
@@ -251,7 +250,7 @@ UnaryOffset::val() const
     return -std::stoi(m_offset_expr->gen());
 }
 
-ArithCmd::ArithCmd(const CompLexer::Token *tok) :
+ArithCmd::ArithCmd(const std::shared_ptr<CompLexer::Token> &tok) :
     Cmd(tok)
 {
 }
@@ -319,14 +318,14 @@ ArithCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-TrigCmd::TrigCmd(const CompLexer::Token *tok, const Reg *reg) :
+TrigCmd::TrigCmd(const std::shared_ptr<CompLexer::Token> &tok,
+                 const std::shared_ptr<Reg> &reg) :
     Cmd(tok), m_reg(reg)
 {
 }
 
 TrigCmd::~TrigCmd()
 {
-    delete m_reg;
 }
 
 const std::string
@@ -371,14 +370,14 @@ TrigCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-LoadRegCmd::LoadRegCmd(const CompLexer::Token *tok, const Reg *reg) :
+LoadRegCmd::LoadRegCmd(const std::shared_ptr<CompLexer::Token> &tok,
+                       const std::shared_ptr<Reg> &reg) :
     Cmd(tok), m_reg(reg)
 {
 }
 
 LoadRegCmd::~LoadRegCmd()
 {
-    delete  m_reg;
 }
 
 const std::string
@@ -398,14 +397,14 @@ LoadRegCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-LoadMemCmd::LoadMemCmd(const CompLexer::Token *tok, const Offset *offset) :
+LoadMemCmd::LoadMemCmd(const std::shared_ptr<CompLexer::Token> &tok,
+                       const std::shared_ptr<Offset> &offset) :
     Cmd(tok), m_offset(offset)
 {
 }
 
 LoadMemCmd::~LoadMemCmd()
 {
-    delete m_offset;
 }
 
 const std::string
@@ -425,14 +424,14 @@ LoadMemCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
-LoadRealCmd::LoadRealCmd(const CompLexer::Token *tok, const Real *constant) :
+LoadRealCmd::LoadRealCmd(const std::shared_ptr<CompLexer::Token> &tok,
+                         const std::shared_ptr<Real> &constant) :
     Cmd(tok), m_const(constant)
 {
 }
 
 LoadRealCmd::~LoadRealCmd()
 {
-    delete m_const;
 }
 
 const std::string
