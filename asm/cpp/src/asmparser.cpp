@@ -8,7 +8,6 @@
 #define LEX_RESERVE_REG(lex, num, key) (lex->reserve(new AsmLexer::Register(num), key))
 
 using namespace AsmParser;
-using Inter::Stmt;
 
 Parser::Parser(CompLexer::Lexer *lex) :
     m_lex(lex), m_offset(0)
@@ -89,7 +88,7 @@ Parser::parse()
     return std::shared_ptr<AsmInter::Obj>(new Obj(stmts(), m_lbl_seq));
 }
 
-std::shared_ptr<Stmt>
+std::shared_ptr<AsmInter::Stmt>
 Parser::label()
 {
     using CompLexer::Token;
@@ -102,33 +101,33 @@ Parser::label()
     if (m_look->tag() == ':')
     {
         move();
-        return std::shared_ptr<Stmt>(new DefinedLabel(id, m_offset));
+        return std::shared_ptr<AsmInter::Stmt>(new DefinedLabel(id, m_offset));
     }
-    return std::shared_ptr<Stmt>(new Label(id));
+    return std::shared_ptr<AsmInter::Stmt>(new Label(id));
 }
 
-std::shared_ptr<Stmt>
+std::shared_ptr<AsmInter::Stmt>
 Parser::stmts()
 {
     using AsmInter::Seq;
 
     if (m_look->tag() == '\0')
     {
-        return std::shared_ptr<Stmt>(new Stmt());
+        return std::shared_ptr<AsmInter::Stmt>(new AsmInter::Stmt());
     }
     else
     {
-        return std::shared_ptr<Stmt>(new Seq(stmt(), stmts()));
+        return std::shared_ptr<AsmInter::Stmt>(new Seq(stmt(), stmts()));
     }
 }
 
-std::shared_ptr<Stmt>
+std::shared_ptr<AsmInter::Stmt>
 Parser::stmt()
 {
     return arith_cmd();
 }
 
-std::shared_ptr<Stmt>
+std::shared_ptr<AsmInter::Stmt>
 Parser::arith_cmd()
 {
     using AsmLexer::Tag;
@@ -138,7 +137,7 @@ Parser::arith_cmd()
         case Tag::SUM: case Tag::SUMR: case Tag::SUB: case Tag::SUBR:
         case Tag::MUL: case Tag::MULR: case Tag::DIV: case Tag::DIVR:
         case Tag::LOG: case Tag::LOGR: case Tag::POW: case Tag::POWR:
-            std::shared_ptr<Stmt> x (new ArithCmd(m_look));
+            std::shared_ptr<AsmInter::Stmt> x (new ArithCmd(m_look));
             move();
             m_offset += sizeof (arith_cmd_t);
             return x;
@@ -146,7 +145,7 @@ Parser::arith_cmd()
     return trig_cmd();
 }
 
-std::shared_ptr<Stmt>
+std::shared_ptr<AsmInter::Stmt>
 Parser::trig_cmd()
 {
     using AsmInter::TrigCmd;
@@ -159,7 +158,7 @@ Parser::trig_cmd()
             std::shared_ptr<CompLexer::Token> tok (m_look);
             move();
             m_offset += sizeof (trig_cmd_t);
-            return std::shared_ptr<Stmt> (new TrigCmd(tok, reg()));
+            return std::shared_ptr<AsmInter::Stmt> (new TrigCmd(tok, reg()));
     }
     return ld_cmd();
 }
@@ -177,7 +176,7 @@ Parser::reg()
     return std::shared_ptr<AsmInter::Reg>(new Reg(tok));
 }
 
-std::shared_ptr<Stmt>
+std::shared_ptr<AsmInter::Stmt>
 Parser::ld_cmd()
 {
     using AsmLexer::Tag;
@@ -196,21 +195,21 @@ Parser::ld_cmd()
             if (m_look->tag() == '[')
             {
                 move();
-                std::shared_ptr<Stmt> x (new LoadMemCmd(tok, offset()));
+                std::shared_ptr<AsmInter::Stmt> x (new LoadMemCmd(tok, offset()));
                 match(']');
                 m_offset += sizeof (ld_cmd_mem_t);
                 return x;
             }
             else if (m_look->tag() == Tag::REG)
             {
-                std::shared_ptr<Stmt> x (new LoadRegCmd(tok, reg()));
+                std::shared_ptr<AsmInter::Stmt> x (new LoadRegCmd(tok, reg()));
                 m_offset += sizeof (ld_cmd_reg_t);
                 move();
                 return x;
             }
             else if (m_look->tag() == CompLexer::Tag::REAL)
             {
-                std::shared_ptr<Stmt> x
+                std::shared_ptr<AsmInter::Stmt> x
                     (new LoadRealCmd(tok,
                                      std::shared_ptr<AsmInter::Real>(new Real(m_look))));
                 m_offset += sizeof (ld_cmd_real_t);
@@ -267,28 +266,28 @@ Parser::expr()
     return x;
 }
 
-std::shared_ptr<Stmt>
+std::shared_ptr<AsmInter::Stmt>
 Parser::call_cmd()
 {
     return cmd();
 }
 
-std::shared_ptr<Stmt>
+std::shared_ptr<AsmInter::Stmt>
 Parser::cmd()
 {
     using AsmLexer::Tag;
     using AsmInter::Cmd;
-    std::shared_ptr<Stmt> stmt (nullptr);
+    std::shared_ptr<AsmInter::Stmt> stmt (nullptr);
     switch (m_look->tag())
     {
         case Tag::END: case Tag::POP: case Tag::RET:
-            stmt = std::shared_ptr<Stmt> (new Cmd(m_look));
+            stmt = std::shared_ptr<AsmInter::Stmt> (new Cmd(m_look));
             m_offset += sizeof (cmd_t);
             break;
         default:
             std::cerr << "unexpected sym" << std::endl
                       << "expected cmd" << std::endl;
-            stmt = std::shared_ptr<Stmt> (new Stmt());
+            stmt = std::shared_ptr<AsmInter::Stmt> (new AsmInter::Stmt());
     }
     move();
     return stmt;

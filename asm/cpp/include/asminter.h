@@ -5,24 +5,52 @@
 #define __ASM_PARSER_TEST__
 #endif // __TEST__
 
-#include "comp/cpp/include/inter.h"
+#include "comp/cpp/include/lexer.h"
 #include <memory>
 
-namespace AsmInter {
+namespace AsmObject
+{
+    class Symtable;
+}
 
-class Seq : public Inter::Stmt
+namespace AsmInter
+{
+
+enum LabelTag { DEFINED, UNDEFINED };
+
+class Stmt
 {
 public:
-    Seq(const std::shared_ptr<Stmt> &stmt1,
-        const std::shared_ptr<Stmt> &stmt2);
+    Stmt();
+    virtual ~Stmt();
+    virtual const std::string gen() const;
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::Symtable *st,
+                                               int16_t global_offset) const;
+};
+
+class Seq : public Stmt
+{
+public:
+    Seq(const std::shared_ptr<const Stmt> &stmt1,
+        const std::shared_ptr<const Stmt> &stmt2);
     virtual ~Seq();
     virtual const std::string gen() const;
 private:
-    const std::shared_ptr<Stmt> m_stmt1;
-    const std::shared_ptr<Stmt> m_stmt2;
+    const std::shared_ptr<const Stmt> m_stmt1;
+    const std::shared_ptr<const Stmt> m_stmt2;
 };
 
-class Expr : public Inter::Stmt
+class TmpSeq : public Seq
+{
+public:
+    TmpSeq(const std::shared_ptr<const Stmt> &stmt1,
+           const std::shared_ptr<const Stmt> &stmt2);
+    virtual ~TmpSeq();
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::Symtable *st,
+                                               int16_t global_offset) const;
+};
+
+class Expr : public Stmt
 {
 public:
     Expr();
@@ -33,45 +61,49 @@ public:
 class Op : public Expr
 {
 public:
-    Op(const std::shared_ptr<CompLexer::Token> &tok);
+    Op(const std::shared_ptr<const CompLexer::Token> &tok);
     virtual ~Op();
     virtual const std::string gen() const;
 protected:
-    const std::shared_ptr<CompLexer::Token> m_tok;
+    const std::shared_ptr<const CompLexer::Token> m_tok;
 };
 
 class Real : public Op
 {
 public:
-    Real(const std::shared_ptr<CompLexer::Token> &tok);
+    Real(const std::shared_ptr<const CompLexer::Token> &tok);
     virtual ~Real();
     double val() const;
 };
 
-class Cmd : public Inter::Stmt
+class Cmd : public Stmt
 {
 public:
-    Cmd(const std::shared_ptr<CompLexer::Token> &tok);
+    Cmd(const std::shared_ptr<const CompLexer::Token> &tok);
     virtual ~Cmd();
     virtual const std::string gen() const;
+
 protected:
-    const std::shared_ptr<CompLexer::Token> m_tok;
+    const std::shared_ptr<const CompLexer::Token> m_tok;
 };
 
-class Label : public Inter::Stmt
+class Label : public Stmt
 {
 public:
-    Label(const std::shared_ptr<CompLexer::Token> &tok);
+    Label(const std::shared_ptr<const CompLexer::Token> &tok,
+          LabelTag tag = LabelTag::UNDEFINED);
     virtual ~Label();
     virtual const std::string gen() const;
+    LabelTag tag() const;
 protected:
-    const std::shared_ptr<CompLexer::Token> m_tok;
+    const LabelTag m_tag;
+    const std::shared_ptr<const CompLexer::Token> m_tok;
 };
 
 class DefinedLabel : public Label
 {
 public:
-    DefinedLabel(const std::shared_ptr<CompLexer::Token> &tok,
+    DefinedLabel(const std::shared_ptr<const CompLexer::Token> &tok,
                  int16_t offset);
     virtual ~DefinedLabel();
     virtual const std::string gen() const;
@@ -79,23 +111,23 @@ private:
     const int16_t m_offset;
 };
 
-class LabelSeq : public Inter::Stmt
+class LabelSeq : public Stmt
 {
 public:
-    LabelSeq(const std::shared_ptr<Stmt> &lbl);
+    LabelSeq(const std::shared_ptr<const Stmt> &lbl);
     virtual ~LabelSeq();
     virtual const std::string gen() const;
-    void push_label(std::shared_ptr<Stmt> &lbl);
+    void push_label(std::shared_ptr<const Stmt> &lbl);
 private:
-    const std::shared_ptr<Stmt> m_lbl;
+    const std::shared_ptr<const Stmt> m_lbl;
     std::shared_ptr<LabelSeq> m_seq;
 };
 
 
-class Obj : public Inter::Stmt
+class Obj : public Stmt
 {
 public:
-    Obj(const std::shared_ptr<Stmt> &stmt,
+    Obj(const std::shared_ptr<const Stmt> &stmt,
         std::shared_ptr<LabelSeq> &lbl_seq);
     virtual ~Obj();
     virtual const std::string gen() const;
@@ -104,14 +136,14 @@ public:
     std::string cmd_test() const;
 #endif // __ASM_PARSER_TEST__
 private:
-    const std::shared_ptr<Stmt> m_stmt;
+    const std::shared_ptr<const Stmt> m_stmt;
     std::shared_ptr<LabelSeq> m_lbl_seq;
 };
 
 class Reg : public Op
 {
 public:
-    Reg(const std::shared_ptr<CompLexer::Token> &tok);
+    Reg(const std::shared_ptr<const CompLexer::Token> &tok);
     virtual ~Reg();
     unsigned long val() const;
 };
@@ -119,19 +151,19 @@ public:
 class Offset : public Expr
 {
 public:
-    Offset(const std::shared_ptr<Expr> &offset_expr);
+    Offset(const std::shared_ptr<const Expr> &offset_expr);
     virtual ~Offset();
     virtual int16_t val() const;
     virtual const std::string gen() const;
 protected:
-    const std::shared_ptr<Expr> m_offset_expr;
+    const std::shared_ptr<const Expr> m_offset_expr;
 };
 
 class UnaryOffset : public Op, public Offset
 {
 public:
-    UnaryOffset(const std::shared_ptr<CompLexer::Token> &tok,
-                const std::shared_ptr<Offset> &offset_expr);
+    UnaryOffset(const std::shared_ptr<const CompLexer::Token> &tok,
+                const std::shared_ptr<const Offset> &offset_expr);
     virtual ~UnaryOffset();
     virtual int16_t val() const;
 };
@@ -139,7 +171,7 @@ public:
 class ArithCmd : public Cmd
 {
 public:
-    ArithCmd(const std::shared_ptr<CompLexer::Token> &tok);
+    ArithCmd(const std::shared_ptr<const CompLexer::Token> &tok);
     virtual ~ArithCmd();
     virtual const std::string gen() const;
 };
@@ -147,45 +179,45 @@ public:
 class TrigCmd : public Cmd
 {
 public:
-    TrigCmd(const std::shared_ptr<CompLexer::Token> &tok,
-            const std::shared_ptr<Reg> &reg);
+    TrigCmd(const std::shared_ptr<const CompLexer::Token> &tok,
+            const std::shared_ptr<const Reg> &reg);
     virtual ~TrigCmd();
     virtual const std::string gen() const;
 private:
-    const std::shared_ptr<Reg> m_reg;
+    const std::shared_ptr<const Reg> m_reg;
 };
 
 class LoadRegCmd : public Cmd
 {
 public:
-    LoadRegCmd(const std::shared_ptr<CompLexer::Token> &tok,
-               const std::shared_ptr<Reg> &reg);
+    LoadRegCmd(const std::shared_ptr<const CompLexer::Token> &tok,
+               const std::shared_ptr<const Reg> &reg);
     virtual ~LoadRegCmd();
     virtual const std::string gen() const;
 private:
-    const std::shared_ptr<Reg> m_reg;
+    const std::shared_ptr<const Reg> m_reg;
 };
 
 class LoadMemCmd : public Cmd
 {
 public:
-    LoadMemCmd(const std::shared_ptr<CompLexer::Token> &tok,
-               const std::shared_ptr<Offset> &offset);
+    LoadMemCmd(const std::shared_ptr<const CompLexer::Token> &tok,
+               const std::shared_ptr<const Offset> &offset);
     virtual ~LoadMemCmd();
     virtual const std::string gen() const;
 private:
-    const std::shared_ptr<Offset> m_offset;
+    const std::shared_ptr<const Offset> m_offset;
 };
 
 class LoadRealCmd : public Cmd
 {
 public:
-    LoadRealCmd(const std::shared_ptr<CompLexer::Token> &tok,
-                const std::shared_ptr<Real> &constant);
+    LoadRealCmd(const std::shared_ptr<const CompLexer::Token> &tok,
+                const std::shared_ptr<const Real> &constant);
     virtual ~LoadRealCmd();
     virtual const std::string gen() const;
 private:
-    const std::shared_ptr<Real> m_const;
+    const std::shared_ptr<const Real> m_const;
 };
 
 }
