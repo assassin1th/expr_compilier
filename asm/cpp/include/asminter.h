@@ -10,7 +10,7 @@
 
 namespace AsmObject
 {
-    class SymTable;
+    class DefinedSymTable;
 }
 
 namespace AsmInter
@@ -24,7 +24,7 @@ public:
     Stmt();
     virtual ~Stmt();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     virtual size_t size() const;
 };
@@ -36,7 +36,7 @@ public:
         const std::shared_ptr<const Stmt> &stmt2);
     virtual ~Seq();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     virtual size_t size() const;
 private:
@@ -50,7 +50,7 @@ public:
     TmpSeq(const std::shared_ptr<const Stmt> &stmt1,
            const std::shared_ptr<const Stmt> &stmt2);
     virtual ~TmpSeq();
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
 };
 
@@ -60,7 +60,7 @@ public:
     Expr();
     virtual ~Expr();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
 };
 
@@ -70,7 +70,7 @@ public:
     Op(const std::shared_ptr<const CompLexer::Token> &tok);
     virtual ~Op();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
 protected:
     const std::shared_ptr<const CompLexer::Token> m_tok;
@@ -82,7 +82,7 @@ public:
     Real(const std::shared_ptr<const CompLexer::Token> &tok);
     virtual ~Real();
     double val() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
 };
 
@@ -92,7 +92,7 @@ public:
     Cmd(const std::shared_ptr<const CompLexer::Token> &tok);
     virtual ~Cmd();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     virtual size_t size() const;
 protected:
@@ -106,7 +106,7 @@ public:
           LabelTag tag = LabelTag::UNDEFINED);
     virtual ~Label();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     LabelTag tag() const;
     const std::string &id() const;
@@ -123,40 +123,11 @@ public:
                  int16_t offset);
     virtual ~DefinedLabel();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     virtual int16_t offset() const;
 private:
     const int16_t m_offset;
-};
-
-class LabelSeq : public Stmt
-{
-public:
-    LabelSeq(const std::shared_ptr<const Stmt> &lbl);
-    virtual ~LabelSeq();
-    virtual const std::string gen() const;
-    void push_label(std::shared_ptr<const Stmt> &lbl);
-private:
-    const std::shared_ptr<const Stmt> m_lbl;
-    std::shared_ptr<LabelSeq> m_seq;
-};
-
-
-class Obj : public Stmt
-{
-public:
-    Obj(const std::shared_ptr<const Stmt> &stmt,
-        std::shared_ptr<LabelSeq> &lbl_seq);
-    virtual ~Obj();
-    virtual const std::string gen() const;
-#ifdef __ASM_PARSER_TEST__
-    std::string head_test() const;
-    std::string cmd_test() const;
-#endif // __ASM_PARSER_TEST__
-private:
-    const std::shared_ptr<const Stmt> m_stmt;
-    std::shared_ptr<LabelSeq> m_lbl_seq;
 };
 
 class Reg : public Op
@@ -164,7 +135,7 @@ class Reg : public Op
 public:
     Reg(const std::shared_ptr<const CompLexer::Token> &tok);
     virtual ~Reg();
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     unsigned long val() const;
 };
@@ -176,7 +147,7 @@ public:
     virtual ~Offset();
     virtual int16_t val() const;
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
 protected:
     const std::shared_ptr<const Expr> m_offset_expr;
@@ -189,7 +160,7 @@ public:
                 const std::shared_ptr<const Offset> &offset_expr);
     virtual ~UnaryOffset();
     virtual int16_t val() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
 private:
     std::shared_ptr<const CompLexer::Token> m_tok;
@@ -201,7 +172,7 @@ public:
     ArithCmd(const std::shared_ptr<const CompLexer::Token> &tok);
     virtual ~ArithCmd();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     virtual size_t size() const;
 };
@@ -213,7 +184,7 @@ public:
             const std::shared_ptr<const Reg> &reg);
     virtual ~TrigCmd();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     virtual size_t size() const;
 private:
@@ -227,7 +198,7 @@ public:
                const std::shared_ptr<const Reg> &reg);
     virtual ~LoadRegCmd();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     virtual size_t size() const;
 private:
@@ -241,7 +212,7 @@ public:
                const std::shared_ptr<const Offset> &offset);
     virtual ~LoadMemCmd();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     virtual size_t size() const;
 private:
@@ -255,7 +226,7 @@ public:
                 const std::shared_ptr<const Real> &constant);
     virtual ~LoadRealCmd();
     virtual const std::string gen() const;
-    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::SymTable *st,
+    virtual const std::shared_ptr<const Stmt> reduce(const AsmObject::DefinedSymTable *st,
                                                int16_t global_offset) const;
     virtual size_t size() const;
 private:

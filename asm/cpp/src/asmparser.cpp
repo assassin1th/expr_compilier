@@ -79,32 +79,13 @@ Parser::match(int tag)
     }
 }
 
-const std::shared_ptr<const AsmInter::Obj>
+const std::shared_ptr<const AsmObject::ObjectFile>
 Parser::parse()
 {
-    using AsmInter::LabelSeq;
-    using AsmInter::Obj;
-    m_lbl_seq = std::shared_ptr<LabelSeq>(new LabelSeq(label()));
-    return std::shared_ptr<const AsmInter::Obj>(new Obj(stmts(), m_lbl_seq));
+    m_st = new AsmObject::SymTable;
+    return std::shared_ptr<const AsmObject::ObjectFile>(new AsmObject::ObjectFile(m_st, stmts()));
 }
 
-const std::shared_ptr<const AsmInter::Stmt>
-Parser::label()
-{
-    using CompLexer::Token;
-    using CompLexer::Tag;
-    using AsmInter::Label;
-    using AsmInter::DefinedLabel;
-
-    std::shared_ptr<const Token> id = m_look;
-    match(Tag::ID);
-    if (m_look->tag() == ':')
-    {
-        move();
-        return std::shared_ptr<AsmInter::Stmt>(new DefinedLabel(id, m_offset));
-    }
-    return std::shared_ptr<AsmInter::Stmt>(new Label(id));
-}
 
 const std::shared_ptr<const AsmInter::Stmt>
 Parser::stmts()
@@ -117,8 +98,32 @@ Parser::stmts()
     }
     else
     {
-        return std::shared_ptr<AsmInter::Stmt>(new Seq(stmt(), stmts()));
+        return std::shared_ptr<AsmInter::Stmt>(new Seq(label(), stmts()));
     }
+}
+
+const std::shared_ptr<const AsmInter::Stmt>
+Parser::label()
+{
+    using CompLexer::Token;
+    using CompLexer::Tag;
+    using AsmInter::Label;
+    using AsmInter::DefinedLabel;
+
+    if (m_look->tag() == Tag::ID)
+    {
+        std::shared_ptr<const Token> id = m_look;
+        move();
+        if (m_look->tag() != ':')
+        {
+            std::shared_ptr<const AsmInter::Label> label (new Label(id));
+            m_st->set_sym(id->val(), label);
+            return label;
+        }
+        m_st->set_sym(id->val(), std::shared_ptr<AsmInter::DefinedLabel> (new DefinedLabel(id, m_offset)));
+        move();
+    }
+    return stmt();
 }
 
 const std::shared_ptr<const AsmInter::Stmt>

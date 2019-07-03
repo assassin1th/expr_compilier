@@ -22,7 +22,7 @@ Stmt::gen() const
 
 
 const std::shared_ptr<const Stmt>
-Stmt::reduce(const AsmObject::SymTable *st,
+Stmt::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new Stmt(*this));
@@ -51,7 +51,7 @@ Seq::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-Seq::reduce(const AsmObject::SymTable *st,
+Seq::reduce(const AsmObject::DefinedSymTable *st,
             int16_t global_offset) const
 {
     const std::shared_ptr<const Stmt> stmt1 (m_stmt1->reduce(st, global_offset));
@@ -77,7 +77,7 @@ TmpSeq::~TmpSeq()
 }
 
 const std::shared_ptr<const Stmt>
-TmpSeq::reduce(const AsmObject::SymTable *st,
+TmpSeq::reduce(const AsmObject::DefinedSymTable *st,
                int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt>(this);
@@ -98,7 +98,7 @@ Expr::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-Expr::reduce(const AsmObject::SymTable *st,
+Expr::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new Expr(*this));
@@ -120,7 +120,7 @@ Op::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-Op::reduce(const AsmObject::SymTable *st,
+Op::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new Op(*this));
@@ -143,7 +143,7 @@ Real::val() const
 }
 
 const std::shared_ptr<const Stmt>
-Real::reduce(const AsmObject::SymTable *st,
+Real::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new Real(*this));
@@ -185,7 +185,7 @@ Cmd::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-Cmd::reduce(const AsmObject::SymTable *st,
+Cmd::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new Cmd(*this));
@@ -214,7 +214,7 @@ Label::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-Label::reduce(const AsmObject::SymTable *st,
+Label::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     const std::shared_ptr<const Stmt> sym = st->get_sym(m_tok->val());
@@ -260,7 +260,7 @@ DefinedLabel::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-DefinedLabel::reduce(const AsmObject::SymTable *st,
+DefinedLabel::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new DefinedLabel(*this));
@@ -271,71 +271,6 @@ DefinedLabel::offset() const
 {
     return m_offset;
 }
-
-LabelSeq::LabelSeq(const std::shared_ptr<const Stmt> &lbl) :
-    m_lbl(lbl), m_seq(nullptr)
-{
-}
-
-LabelSeq::~LabelSeq()
-{
-}
-
-const std::string
-LabelSeq::gen() const
-{
-    if (m_seq)
-    {
-        return m_lbl->gen() + m_seq->gen();
-    }
-    else
-    {
-        return m_lbl->gen();
-    }
-}
-
-void
-LabelSeq::push_label(std::shared_ptr<const Stmt> &lbl)
-{
-    if (m_seq)
-    {
-        m_seq->push_label(lbl);
-    }
-    else
-    {
-        m_seq = std::shared_ptr<LabelSeq>(new LabelSeq(lbl));
-    }
-}
-
-Obj::Obj(const std::shared_ptr<const Stmt> &stmt,
-         std::shared_ptr<LabelSeq> &lbl_seq) :
-    m_stmt(stmt), m_lbl_seq(lbl_seq)
-{
-}
-
-Obj::~Obj()
-{
-}
-
-const std::string
-Obj::gen() const
-{
-    return "SYMTAB:\n" + m_lbl_seq->gen() + "\n" + m_stmt->gen();
-}
-
-#ifdef __ASM_PARSER_TEST__
-std::string
-Obj::head_test() const
-{
-    return "SYMTAB:\n" + m_lbl_seq->gen();
-}
-
-std::string
-Obj::cmd_test() const
-{
-    return m_stmt->gen();
-}
-#endif // __ASM_PARSER_TEST__
 
 Reg::Reg(const std::shared_ptr<const CompLexer::Token> &tok) :
     Op(tok)
@@ -353,7 +288,7 @@ Reg::val() const
 }
 
 const std::shared_ptr<const Stmt>
-Reg::reduce(const AsmObject::SymTable *st,
+Reg::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new Reg(*this));
@@ -381,7 +316,7 @@ Offset::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-Offset::reduce(const AsmObject::SymTable *st,
+Offset::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new Offset(*this));
@@ -404,7 +339,7 @@ UnaryOffset::val() const
 }
 
 const std::shared_ptr<const Stmt>
-UnaryOffset::reduce(const AsmObject::SymTable *st,
+UnaryOffset::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new UnaryOffset(*this));
@@ -479,7 +414,7 @@ ArithCmd::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-ArithCmd::reduce(const AsmObject::SymTable *st,
+ArithCmd::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new ArithCmd(*this));
@@ -544,7 +479,7 @@ TrigCmd::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-TrigCmd::reduce(const AsmObject::SymTable *st,
+TrigCmd::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new TrigCmd(*this));
@@ -584,7 +519,7 @@ LoadRegCmd::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-LoadRegCmd::reduce(const AsmObject::SymTable *st,
+LoadRegCmd::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new LoadRegCmd(*this));
@@ -624,7 +559,7 @@ LoadMemCmd::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-LoadMemCmd::reduce(const AsmObject::SymTable *st,
+LoadMemCmd::reduce(const AsmObject::DefinedSymTable *st,
              int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new LoadMemCmd(*this));
@@ -664,7 +599,7 @@ LoadRealCmd::gen() const
 }
 
 const std::shared_ptr<const Stmt>
-LoadRealCmd::reduce(const AsmObject::SymTable *st,
+LoadRealCmd::reduce(const AsmObject::DefinedSymTable *st,
                     int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt> (new LoadRealCmd(*this));
