@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include "cont/cpp/include/containers.h"
 
-#define TABLE_TYPE std::unordered_map<std::string, std::shared_ptr<Token>>
+#define TABLE_TYPE std::unordered_map<std::string, std::shared_ptr<const Token>>
 
 namespace CompLexer
 {
@@ -59,7 +59,7 @@ class Lexer
 public:
     Lexer(const std::string &src);
     virtual ~Lexer();
-    virtual std::shared_ptr<Token> scan();
+    virtual std::shared_ptr<const Token> scan();
 #ifdef __COMP_LEXER_TEST__
     const std::string test();
 #endif // LEXER_TEST_

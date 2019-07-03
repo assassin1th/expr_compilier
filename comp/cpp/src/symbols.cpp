@@ -17,14 +17,14 @@ Env::~Env()
 
 
 void
-Env::set(const std::shared_ptr<Token> &w,
-         const std::shared_ptr<Id> &i)
+Env::set(const std::shared_ptr<const Token> &w,
+         const std::shared_ptr<const Id> &i)
 {
     m_tab[w->val()] = i;
 }
 
-const std::shared_ptr<Id>
-Env::get(const std::shared_ptr<Token> &w)
+const std::shared_ptr<const Id>
+Env::get(const std::shared_ptr<const Token> &w)
 {
     for (Env *e = this; e != nullptr; e = e->m_prev)
     {

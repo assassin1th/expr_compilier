@@ -1,4 +1,4 @@
-#include "asm/cpp/include/asminter.h"
+#include "asm/cpp/include/asmobject.h"
 #include "asm/cpp/include/asmlexer.h"
 #include <string>
 #include <iostream>
@@ -20,11 +20,18 @@ Stmt::gen() const
     return "";
 }
 
+
 const std::shared_ptr<const Stmt>
-Stmt::reduce(const AsmObject::Symtable *st,
+Stmt::reduce(const AsmObject::SymTable *st,
              int16_t global_offset) const
 {
-    return std::shared_ptr<Stmt> (new Stmt (*this));
+    return std::shared_ptr<const Stmt> (new Stmt(*this));
+}
+
+size_t
+Stmt::size() const
+{
+    return 0;
 }
 
 Seq::Seq(const std::shared_ptr<const Stmt> &stmt1,
@@ -43,6 +50,22 @@ Seq::gen() const
     return m_stmt1->gen() + m_stmt2->gen();
 }
 
+const std::shared_ptr<const Stmt>
+Seq::reduce(const AsmObject::SymTable *st,
+            int16_t global_offset) const
+{
+    const std::shared_ptr<const Stmt> stmt1 (m_stmt1->reduce(st, global_offset));
+    global_offset += m_stmt1->size();
+    const std::shared_ptr<const Stmt> stmt2 (m_stmt2->reduce(st, global_offset));
+    return std::shared_ptr<const Stmt> (new Seq(stmt1, stmt2));
+}
+
+size_t
+Seq::size() const
+{
+    return m_stmt1->size() + m_stmt2->size();
+}
+
 TmpSeq::TmpSeq(const std::shared_ptr<const Stmt> &stmt1,
                const std::shared_ptr<const Stmt> &stmt2) :
     Seq(stmt1, stmt2)
@@ -54,7 +77,7 @@ TmpSeq::~TmpSeq()
 }
 
 const std::shared_ptr<const Stmt>
-TmpSeq::reduce(const AsmObject::Symtable *st,
+TmpSeq::reduce(const AsmObject::SymTable *st,
                int16_t global_offset) const
 {
     return std::shared_ptr<const Stmt>(this);
@@ -74,6 +97,13 @@ Expr::gen() const
     return std::string("");
 }
 
+const std::shared_ptr<const Stmt>
+Expr::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new Expr(*this));
+}
+
 Op::Op(const std::shared_ptr<const CompLexer::Token> &tok) :
     m_tok(tok)
 {
@@ -87,6 +117,13 @@ const std::string
 Op::gen() const
 {
     return m_tok->val();
+}
+
+const std::shared_ptr<const Stmt>
+Op::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new Op(*this));
 }
 
 Real::Real(const std::shared_ptr<const CompLexer::Token> &tok) :
@@ -103,6 +140,13 @@ Real::val() const
 {
     std::cerr << gen() << std::endl;
     return std::stod(gen());
+}
+
+const std::shared_ptr<const Stmt>
+Real::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new Real(*this));
 }
 
 Cmd::Cmd(const std::shared_ptr<const CompLexer::Token> &tok) :
@@ -140,6 +184,19 @@ Cmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
+const std::shared_ptr<const Stmt>
+Cmd::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new Cmd(*this));
+}
+
+size_t
+Cmd::size() const
+{
+    return sizeof (cmd_t);
+}
+
 Label::Label(const std::shared_ptr<const CompLexer::Token> &tok,
              LabelTag tag) :
     m_tag(tag), m_tok(tok)
@@ -153,13 +210,37 @@ Label::~Label()
 const std::string
 Label::gen() const
 {
-    return "\t" + m_tok->val() + "U\n";
+    return std::to_string(0);
+}
+
+const std::shared_ptr<const Stmt>
+Label::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    const std::shared_ptr<const Stmt> sym = st->get_sym(m_tok->val());
+    if (sym == nullptr)
+    {
+        return std::shared_ptr<const Stmt> (new Label(*this));
+    }
+    return sym;
 }
 
 LabelTag
 Label::tag() const
 {
     return m_tag;
+}
+
+const std::string &
+Label::id() const
+{
+    return m_tok->val();
+}
+
+int16_t
+Label::offset() const
+{
+    return 0;
 }
 
 DefinedLabel::DefinedLabel(const std::shared_ptr<const CompLexer::Token> &tok,
@@ -175,7 +256,20 @@ DefinedLabel::~DefinedLabel()
 const std::string
 DefinedLabel::gen() const
 {
-    return "\t" + m_tok->val() + " D " + std::to_string(m_offset) + "\n";
+    return std::to_string(m_offset);
+}
+
+const std::shared_ptr<const Stmt>
+DefinedLabel::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new DefinedLabel(*this));
+}
+
+int16_t
+DefinedLabel::offset() const
+{
+    return m_offset;
 }
 
 LabelSeq::LabelSeq(const std::shared_ptr<const Stmt> &lbl) :
@@ -258,6 +352,13 @@ Reg::val() const
     return std::stoul(gen());
 }
 
+const std::shared_ptr<const Stmt>
+Reg::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new Reg(*this));
+}
+
 Offset::Offset(const std::shared_ptr<const Expr> &offset_expr) :
     m_offset_expr(offset_expr)
 {
@@ -279,9 +380,16 @@ Offset::gen() const
     return m_offset_expr->gen();
 }
 
+const std::shared_ptr<const Stmt>
+Offset::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new Offset(*this));
+}
+
 UnaryOffset::UnaryOffset(const std::shared_ptr<const CompLexer::Token> &tok,
                          const std::shared_ptr<const Offset> &offset_expr) :
-    Op(tok), Offset(offset_expr)
+    Offset(offset_expr), m_tok(tok)
 {
 }
 
@@ -293,6 +401,13 @@ int16_t
 UnaryOffset::val() const
 {
     return -std::stoi(m_offset_expr->gen());
+}
+
+const std::shared_ptr<const Stmt>
+UnaryOffset::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new UnaryOffset(*this));
 }
 
 ArithCmd::ArithCmd(const std::shared_ptr<const CompLexer::Token> &tok) :
@@ -363,6 +478,19 @@ ArithCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
+const std::shared_ptr<const Stmt>
+ArithCmd::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new ArithCmd(*this));
+}
+
+size_t
+ArithCmd::size() const
+{
+    return sizeof (arith_cmd_t);
+}
+
 TrigCmd::TrigCmd(const std::shared_ptr<const CompLexer::Token> &tok,
                  const std::shared_ptr<const Reg> &reg) :
     Cmd(tok), m_reg(reg)
@@ -415,6 +543,19 @@ TrigCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
+const std::shared_ptr<const Stmt>
+TrigCmd::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new TrigCmd(*this));
+}
+
+size_t
+TrigCmd::size() const
+{
+    return sizeof (trig_cmd_t);
+}
+
 LoadRegCmd::LoadRegCmd(const std::shared_ptr<const CompLexer::Token> &tok,
                        const std::shared_ptr<const Reg> &reg) :
     Cmd(tok), m_reg(reg)
@@ -440,6 +581,19 @@ LoadRegCmd::gen() const
         cmd.id = cmd::FLD_REG;
     }
     return std::string((char *) &cmd, sizeof (cmd));
+}
+
+const std::shared_ptr<const Stmt>
+LoadRegCmd::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new LoadRegCmd(*this));
+}
+
+size_t
+LoadRegCmd::size() const
+{
+    return sizeof (ld_cmd_reg_t);
 }
 
 LoadMemCmd::LoadMemCmd(const std::shared_ptr<const CompLexer::Token> &tok,
@@ -469,6 +623,19 @@ LoadMemCmd::gen() const
     return std::string((char *) &cmd, sizeof (cmd));
 }
 
+const std::shared_ptr<const Stmt>
+LoadMemCmd::reduce(const AsmObject::SymTable *st,
+             int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new LoadMemCmd(*this));
+}
+
+size_t
+LoadMemCmd::size() const
+{
+    return sizeof (ld_cmd_mem_t);
+}
+
 LoadRealCmd::LoadRealCmd(const std::shared_ptr<const CompLexer::Token> &tok,
                          const std::shared_ptr<const Real> &constant) :
     Cmd(tok), m_const(constant)
@@ -494,4 +661,17 @@ LoadRealCmd::gen() const
         cmd.id = cmd::FLD_REAL;
     }
     return std::string((char *) &cmd, sizeof (cmd));
+}
+
+const std::shared_ptr<const Stmt>
+LoadRealCmd::reduce(const AsmObject::SymTable *st,
+                    int16_t global_offset) const
+{
+    return std::shared_ptr<const Stmt> (new LoadRealCmd(*this));
+}
+
+size_t
+LoadRealCmd::size() const
+{
+    return sizeof (ld_cmd_real_t);
 }

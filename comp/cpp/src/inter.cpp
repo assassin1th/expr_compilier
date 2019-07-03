@@ -19,8 +19,8 @@ Stmt::gen() const
     return "";
 }
 
-FuncDecl::FuncDecl(const std::shared_ptr<Token> &id,
-                   const std::shared_ptr<Stmt> &func_expr):
+FuncDecl::FuncDecl(const std::shared_ptr<const Token> &id,
+                   const std::shared_ptr<const Stmt> &func_expr):
     Stmt(), m_id(id), m_func_expr(func_expr)
 {
 }
@@ -38,7 +38,7 @@ FuncDecl::gen() const
     return m_id->val() + ":\n" + m_func_expr->gen();
 }
 
-Expr::Expr(const std::shared_ptr<Token> &op, int n_reg) :
+Expr::Expr(const std::shared_ptr<const Token> &op, int n_reg) :
     m_n_reg(n_reg), m_op(op)
 {
 }
@@ -53,7 +53,7 @@ Expr::n_reg() const
     return m_n_reg;
 }
 
-Id::Id(const std::shared_ptr<Token> &w, unsigned long d) :
+Id::Id(const std::shared_ptr<const Token> &w, unsigned long d) :
     Expr(w, 1), m_offset(d)
 {
 }
@@ -70,7 +70,7 @@ Id::gen() const
     return "\tFLD [-" + std::to_string(m_offset) + "]\n";
 }
 
-Op::Op(const std::shared_ptr<Token> &op, int n_reg) :
+Op::Op(const std::shared_ptr<const Token> &op, int n_reg) :
     Expr(op, n_reg)
 {
 }
@@ -79,8 +79,8 @@ Op::~Op()
 {
 }
 
-Unary::Unary(const std::shared_ptr<Token> &op,
-             const std::shared_ptr<Expr> &expr) :
+Unary::Unary(const std::shared_ptr<const Token> &op,
+             const std::shared_ptr<const Expr> &expr) :
     Op(op, expr->n_reg()), m_expr(expr)
 {
 }
@@ -98,9 +98,9 @@ Unary::gen() const
 }
 
 
-Arith::Arith(const std::shared_ptr<Token> &op,
-             const std::shared_ptr<Expr> &lexpr,
-             const std::shared_ptr<Expr> &rexpr) :
+Arith::Arith(const std::shared_ptr<const Token> &op,
+             const std::shared_ptr<const Expr> &lexpr,
+             const std::shared_ptr<const Expr> &rexpr) :
     Op(op, MIN(lexpr->n_reg(), rexpr->n_reg()) + 1),
     m_lexpr(lexpr), m_rexpr(rexpr)
 {
@@ -150,7 +150,7 @@ Arith::gen() const
 }
 
 
-Constant::Constant(const std::shared_ptr<Token> &op) :
+Constant::Constant(const std::shared_ptr<const Token> &op) :
     Expr(op, 1), m_val(atof(op->val().c_str()))
 {
 }
@@ -167,8 +167,8 @@ Constant::gen() const
     return "\tFLD " + std::to_string(m_val) + "\n";
 }
 
-Trig::Trig(const std::shared_ptr <CompLexer::Token> &op,
-           const std::shared_ptr <Expr> &expr):
+Trig::Trig(const std::shared_ptr <const CompLexer::Token> &op,
+           const std::shared_ptr <const Expr> &expr):
     Op(op, expr->n_reg()), m_expr(expr)
 {
 }
@@ -220,8 +220,8 @@ Trig::gen() const
     return m_expr->gen() + res + "\n";
 }
 
-Call::Call(const std::shared_ptr<Token> &op,
-           std::vector<std::shared_ptr<Expr> > &args) :
+Call::Call(const std::shared_ptr<const Token> &op,
+           std::vector<std::shared_ptr<const Expr> > &args) :
     Op(op), m_args(args)
 {
 }

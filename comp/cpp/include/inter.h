@@ -19,32 +19,32 @@ public:
 class FuncDecl : public Stmt
 {
 public:
-    FuncDecl(const std::shared_ptr<CompLexer::Token> &id,
-             const std::shared_ptr<Stmt> &func_expr);
+    FuncDecl(const std::shared_ptr<const CompLexer::Token> &id,
+             const std::shared_ptr<const Stmt> &func_expr);
     virtual ~FuncDecl();
     virtual const std::string gen() const;
 private:
-    const std::shared_ptr<CompLexer::Token> m_id;
-    const std::shared_ptr<Stmt> m_func_expr;
+    const std::shared_ptr<const CompLexer::Token> m_id;
+    const std::shared_ptr<const Stmt> m_func_expr;
 };
 
 
 class Expr : public Stmt
 {
 public:
-    Expr(const std::shared_ptr<CompLexer::Token> &op, int n_reg = 0);
+    Expr(const std::shared_ptr<const CompLexer::Token> &op, int n_reg = 0);
     virtual ~Expr();
     int n_reg() const;
 private:
     int m_n_reg;
 protected:
-    const std::shared_ptr<CompLexer::Token> m_op;
+    const std::shared_ptr<const CompLexer::Token> m_op;
 };
 
 class Id : public Expr
 {
 public:
-    Id(const std::shared_ptr<CompLexer::Token> &w, unsigned long d);
+    Id(const std::shared_ptr<const CompLexer::Token> &w, unsigned long d);
     virtual ~Id();
     virtual const std::string gen() const;
 protected:
@@ -54,7 +54,7 @@ protected:
 class Constant : public Expr
 {
 public:
-    Constant(const std::shared_ptr<CompLexer::Token> &op);
+    Constant(const std::shared_ptr<const CompLexer::Token> &op);
     virtual ~Constant();
     virtual const std::string gen() const;
 private:
@@ -64,54 +64,54 @@ private:
 class Op : public Expr
 {
 public:
-    Op(const std::shared_ptr<CompLexer::Token> &op, int n_reg = 0);
+    Op(const std::shared_ptr<const CompLexer::Token> &op, int n_reg = 0);
     virtual ~Op();
 };
 
 class Unary : public Op
 {
 public:
-    Unary(const std::shared_ptr<CompLexer::Token> &op,
-          const std::shared_ptr<Expr> &expr);
+    Unary(const std::shared_ptr<const CompLexer::Token> &op,
+          const std::shared_ptr<const Expr> &expr);
     virtual ~Unary();
     virtual const std::string gen() const;
 private:
-    const std::shared_ptr<Expr> m_expr;
+    const std::shared_ptr<const Expr> m_expr;
 };
 
 class Arith : public Op
 {
 public:
-    Arith(const std::shared_ptr<CompLexer::Token> &op,
-          const std::shared_ptr<Expr> &lexpr,
-          const std::shared_ptr<Expr> &rexpr);
+    Arith(const std::shared_ptr<const CompLexer::Token> &op,
+          const std::shared_ptr<const Expr> &lexpr,
+          const std::shared_ptr<const Expr> &rexpr);
     virtual ~Arith();
     virtual const std::string gen() const;
 private:
-    const std::shared_ptr<Expr> m_lexpr;
-    const std::shared_ptr<Expr> m_rexpr;
+    const std::shared_ptr<const Expr> m_lexpr;
+    const std::shared_ptr<const Expr> m_rexpr;
 };
 
 class Trig : public Op
 {
 public:
-    Trig(const std::shared_ptr<CompLexer::Token> &op,
-         const std::shared_ptr<Expr> &expr);
+    Trig(const std::shared_ptr<const CompLexer::Token> &op,
+         const std::shared_ptr<const Expr> &expr);
     virtual ~Trig();
     virtual const std::string gen() const;
 private:
-    const std::shared_ptr<Expr> m_expr;
+    const std::shared_ptr<const Expr> m_expr;
 };
 
 class Call : public Op
 {
 public:
-    Call(const std::shared_ptr<CompLexer::Token> &op,
-         std::vector<std::shared_ptr<Expr>> &args);
+    Call(const std::shared_ptr<const CompLexer::Token> &op,
+         std::vector<std::shared_ptr<const Expr>> &args);
     virtual ~Call();
     virtual const std::string gen() const;
 private:
-    std::vector<std::shared_ptr<Expr>> m_args;
+    std::vector<std::shared_ptr<const Expr>> m_args;
 };
 
 }

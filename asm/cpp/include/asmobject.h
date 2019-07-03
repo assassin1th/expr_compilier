@@ -9,7 +9,7 @@
 #ifdef TABLE_TYPE
 
 #undef TABLE_TYPE
-#define TABLE_TYPE std::unordered_map<std::string, const std::shared_ptr<AsmInter::Label>>
+#define TABLE_TYPE std::unordered_map<std::string, std::shared_ptr<const AsmInter::Label>>
 
 #else
 
@@ -28,12 +28,12 @@ public:
     SymTable();
     ~SymTable();
     int set_sym(const std::string &key,
-                const std::shared_ptr<AsmInter::Label> &sym);
-    const std::shared_ptr<AsmInter::Label> get_sym(const std::string &key) const;
-    const std::shared_ptr<AsmInter::Stmt> solve(SymTable *st,
-                                                const Objects *objs,
-                                                int16_t global_offset,
-                                                size_t block_size);
+                const std::shared_ptr<const AsmInter::Label> &sym);
+    const std::shared_ptr<const AsmInter::Label> get_sym(const std::string &key) const;
+    const std::shared_ptr<const AsmInter::Stmt> solve(SymTable *st,
+                                                      const Objects *objs,
+                                                      int16_t global_offset,
+                                                      size_t block_size) const;
 private:
     TABLE_TYPE m_tab;
 };
@@ -42,15 +42,15 @@ class ObjectFile
 {
 public:
     ObjectFile(const SymTable *st,
-               const std::shared_ptr<AsmInter::Stmt> &code);
+               const std::shared_ptr<const AsmInter::Stmt> &code);
     ~ObjectFile();
-    bool find_sym(std::shared_ptr<AsmInter::Label> &sym) const;
-    const std::shared_ptr<AsmInter::Stmt> solve(SymTable *st,
-                                                const Objects *objs,
-                                                 int16_t global_offset);
+    bool find_sym(std::shared_ptr<const AsmInter::Label> &sym) const;
+    const std::shared_ptr<const AsmInter::Stmt> solve(SymTable *st,
+                                                      const Objects *objs,
+                                                      int16_t global_offset) const;
 private:
-    const SymTable *st;
-    const std::shared_ptr<AsmInter::Stmt> code;
+    const SymTable *m_st;
+    const std::shared_ptr<const AsmInter::Stmt> m_code;
 };
 
 class Objects
@@ -58,10 +58,10 @@ class Objects
 public:
     Objects();
     ~Objects();
-    const std::shared_ptr<ObjectFile> get_file(const std::shared_ptr<AsmInter::Label> &sym);
-    int add_file(const std::shared_ptr<ObjectFile> &file);
+    const std::shared_ptr<const ObjectFile> get_file(const std::shared_ptr<const AsmInter::Label> &sym) const;
+    int add_file(const std::shared_ptr<const ObjectFile> &file) const;
 private:
-    std::vector<const std::shared_ptr<ObjectFile>> files;
+    std::vector<std::shared_ptr<const ObjectFile>> files;
 };
 
 }

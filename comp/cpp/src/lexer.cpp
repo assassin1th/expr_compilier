@@ -90,7 +90,7 @@ Lexer::reserve(Token *tok, const std::string &key)
     m_tab[key] = std::shared_ptr<Token> (tok);
 }
 
-std::shared_ptr<Token>
+std::shared_ptr<const Token>
 Lexer::scan()
 {
     for (;;readch())
@@ -113,7 +113,7 @@ Lexer::scan()
         TABLE_TYPE::iterator it = m_tab.find(buf);
 
         if (it == m_tab.end()) {
-            std::shared_ptr<Token> w (new Word(Tag::ID, buf));
+            const std::shared_ptr<const Token> w (new Word(Tag::ID, buf));
             m_tab[buf] = w;
             return w;
         }
@@ -135,7 +135,7 @@ Lexer::scan()
         TABLE_TYPE::iterator it = m_tab.find(buf);
         if (it == m_tab.end())
         {
-            std::shared_ptr<Token> r (new Real(buf));
+            const std::shared_ptr<const Token> r (new Real(buf));
             m_tab[buf] = r;
             return r;
         }
@@ -145,7 +145,7 @@ Lexer::scan()
     TABLE_TYPE::iterator it = m_tab.find(buf);
     if (it == m_tab.end())
     {
-        std::shared_ptr<Token> t(new Token(*m_peek));
+        const std::shared_ptr<const Token> t(new Token(*m_peek));
         m_tab[buf] = t;
         readch();
         return t;
@@ -159,7 +159,7 @@ const std::string
 Lexer::test()
 {
     std::string result;
-    for (std::shared_ptr<Token> t = scan(); t->tag() != '\0'; t = scan())
+    for (std::shared_ptr<const Token> t = scan(); t->tag() != '\0'; t = scan())
     {
         result += "<" + t->val() + " | ";
         switch (t->tag())
