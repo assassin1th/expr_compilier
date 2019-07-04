@@ -138,7 +138,6 @@ Real::~Real()
 double
 Real::val() const
 {
-    std::cerr << gen() << std::endl;
     return std::stod(gen());
 }
 

@@ -8,9 +8,6 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
-#include "cont/cpp/include/containers.h"
-
-#define TABLE_TYPE std::unordered_map<std::string, std::shared_ptr<const Token>>
 
 namespace CompLexer
 {
@@ -70,7 +67,8 @@ protected:
     void readch();
     bool readch(int c);
     std::string::const_iterator m_peek;
-    TABLE_TYPE m_tab;
+    using Table = std::unordered_map<std::string, std::shared_ptr<const Token>>;
+    Table m_tab;
 
 };
 

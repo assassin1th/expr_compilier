@@ -13,13 +13,13 @@ class Parser
 public:
     Parser(CompLexer::Lexer *m_lex);
     virtual ~Parser();
-    virtual const std::shared_ptr<const Inter::Stmt> parse();
+    virtual const std::shared_ptr<const Inter::FuncDecl> parse();
 private:
     CompLexer::Lexer *m_lex;
     Symbols::Env *m_env;
     unsigned long m_used;
     void match(int tag);
-    const std::shared_ptr<const Inter::Stmt> func();
+    const std::shared_ptr<const Inter::FuncDecl> func();
     const std::shared_ptr<const Inter::Expr> expr();
     const std::shared_ptr<const Inter::Expr> term();
     const std::shared_ptr<const Inter::Expr> unary();

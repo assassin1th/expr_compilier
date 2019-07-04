@@ -50,13 +50,13 @@ Parser::match(int tag)
     }
 }
 
-const std::shared_ptr<const Inter::Stmt>
+const std::shared_ptr<const Inter::FuncDecl>
 Parser::parse()
 {
     return func();
 }
 
-const std::shared_ptr<const Inter::Stmt>
+const std::shared_ptr<const Inter::FuncDecl>
 Parser::func()
 {
     using CompLexer::Tag;
@@ -88,7 +88,7 @@ Parser::func()
     }
     move();
     match('=');
-    return std::shared_ptr<Inter::Stmt> (new Inter::FuncDecl(id, expr()));
+    return std::shared_ptr<const Inter::FuncDecl> (new Inter::FuncDecl(id, expr(), m_used / sizeof (double)));
 }
 
 const std::shared_ptr<const Expr>
@@ -179,6 +179,7 @@ Parser::factor()
             break;
         case Tag::LOG:
             id = m_look;
+            move();
             match('(');
             x = expr();
             match(',');

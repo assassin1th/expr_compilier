@@ -1,5 +1,5 @@
 #include "asm/cpp/include/asmobject.h"
-
+#include <iostream>
 using namespace AsmObject;
 
 SymTable::SymTable()
@@ -12,7 +12,7 @@ SymTable::~SymTable()
 
 int
 SymTable::set_sym(const std::string &key,
-        const std::shared_ptr<const AsmInter::Label> &sym)
+                  const std::shared_ptr<const AsmInter::Label> &sym)
 {
     if (m_tab.find(key) == m_tab.end())
     {
@@ -65,6 +65,11 @@ SymTable::solve(DefinedSymTable *st,
         if (l == nullptr)
         {
             const std::shared_ptr<const ObjectFile> file (objs->get_file(n));
+            if (!file)
+            {
+                std::cerr << "wat? " << n->id() <<std::endl;
+                continue;
+            }
             code = std::shared_ptr<const AsmInter::Stmt>
                     (new AsmInter::Seq(code, file->solve(st,
                                                          objs,

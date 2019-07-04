@@ -20,8 +20,9 @@ Stmt::gen() const
 }
 
 FuncDecl::FuncDecl(const std::shared_ptr<const Token> &id,
-                   const std::shared_ptr<const Stmt> &func_expr):
-    Stmt(), m_id(id), m_func_expr(func_expr)
+                   const std::shared_ptr<const Stmt> &func_expr,
+                   size_t n_arg):
+    Stmt(), m_n_arg(n_arg), m_id(id), m_func_expr(func_expr)
 {
 }
 
@@ -36,6 +37,12 @@ FuncDecl::gen() const
     TEST_MSG({},
              "gen method of Inter::FuncDecl class");
     return m_id->val() + ":\n" + m_func_expr->gen();
+}
+
+size_t
+FuncDecl::n_arg() const
+{
+    return m_n_arg;
 }
 
 Expr::Expr(const std::shared_ptr<const Token> &op, int n_reg) :
@@ -189,31 +196,31 @@ Trig::gen() const
                      "In gen method of Inter::Trig class");
             break;
         case Tag::SIN:
-            TEST_MSG(res += "FCOS ST0",
+            TEST_MSG(res += "FSIN ST0",
                      "In gen method of Inter::Trig class");
             break;
         case Tag::TAN:
-            TEST_MSG(res += "FCOS ST0",
+            TEST_MSG(res += "FTAN ST0",
                      "In gen method of Inter::Trig class");
             break;
         case Tag::CTAN:
-            TEST_MSG(res += "FCOS ST0",
+            TEST_MSG(res += "FCTAN ST0",
                      "In gen method of Inter::Trig class");
             break;
         case Tag::ACOS:
-            TEST_MSG(res += "FCOS ST0",
+            TEST_MSG(res += "FACOS ST0",
                      "In gen method of Inter::Trig class");
             break;
         case Tag::ASIN:
-            TEST_MSG(res += "FCOS ST0",
+            TEST_MSG(res += "FASIN ST0",
                      "In gen method of Inter::Trig class");
             break;
         case Tag::ATAN:
-            TEST_MSG(res += "FCOS ST0",
+            TEST_MSG(res += "FATAN ST0",
                      "In gen method of Inter::Trig class");
             break;
         case Tag::ACTAN:
-            TEST_MSG(res += "FCOS ST0",
+            TEST_MSG(res += "FACTAN ST0",
                      "In gen method of Inter::Trig class");
             break;
     }

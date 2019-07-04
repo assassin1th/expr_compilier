@@ -20,7 +20,7 @@ Parser::Parser(CompLexer::Lexer *lex) :
     LEX_RESERVE_WORD(lex, Tag::SUM, "FSUM");
     LEX_RESERVE_WORD(lex, Tag::SUMR, "FSUMR");
     LEX_RESERVE_WORD(lex, Tag::DIV, "FDIV");
-    LEX_RESERVE_WORD(lex, Tag::DIVR, "DIVR");
+    LEX_RESERVE_WORD(lex, Tag::DIVR, "FDIVR");
     LEX_RESERVE_WORD(lex, Tag::MUL, "FMUL");
     LEX_RESERVE_WORD(lex, Tag::MULR, "FMULR");
     LEX_RESERVE_WORD(lex, Tag::LOG, "FLOG");
@@ -75,7 +75,9 @@ Parser::match(int tag)
     }
     else
     {
-        std::cerr << "unexpected sym" << std::endl;
+        std::cerr << "unexpected sym:" << std::endl
+                  << m_look->val() << std::endl
+                  << "expecter: " << std::to_string((char) tag) << std::endl;
     }
 }
 
@@ -268,6 +270,7 @@ Parser::expr()
             x = std::shared_ptr<const AsmInter::Expr> (new Expr());
             break;
     }
+    move();
     return x;
 }
 

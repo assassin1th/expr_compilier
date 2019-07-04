@@ -3,6 +3,7 @@
 #define DEFAULT_MEM_SIZE (1 << 16)
 #define FPU_STACK_SIZE 8
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -10,10 +11,10 @@ typedef struct
 {
     uint8_t *mem;
     double *stack;
-    cond_t cond;
     sp_t sp;
     pc_t pc;
     tmp_sp_t tsp;
+    cond_t cond;
 } vm_t;
 
 static void
@@ -107,15 +108,28 @@ exec(vm_t *vm)
 
 
 double
-run(uint8_t *prog)
+run(const char *prog, size_t n_arg, double *args)
 {
-    vm_t vm = {0};
-    vm.stack = calloc(DEFAULT_MEM_SIZE, sizeof(uint8_t));
-    vm.pc.pcmd = prog;
+    vm_t vm = {
+        .stack = calloc(DEFAULT_MEM_SIZE, sizeof(uint8_t)),
+        .pc = {.pcmd = prog},
+        .sp = {0},
+        .tsp = {0},
+        .cond = {0}
+    };
     vm.mem = (uint8_t *) (vm.stack + FPU_STACK_SIZE);
+
+    for (int i = 0; i < n_arg; ++i)
+    {
+        ((double *)vm.mem)[i] = args[n_arg - 1 - i];
+    }
+    vm.mem += sizeof (double) * n_arg;
+
     exec(&vm);
+
     double result = vm.stack[vm.cond.fsp];
     free(vm.stack);
+
     return result;
 }
 
@@ -136,9 +150,9 @@ fsub(double *stack, cond_t *cond, pc_t *pc)
     --(cond->fsp);
     if (((arith_cmd_t *) pc->pcmd)->mode_flag)
     {
-        stack[cond->fsp] = stack[cond->fsp + 1] - stack[cond->fsp];
+        stack[cond->fsp] = stack[(cond->fsp + 1) & 7] - stack[cond->fsp];
     } else {
-        stack[cond->fsp] = stack[cond->fsp] - stack[cond->fsp + 1];
+        stack[cond->fsp] = stack[cond->fsp] - stack[(cond->fsp + 1) & 7];
     }
     pc->pcmd += sizeof (arith_cmd_t);
 }
@@ -149,9 +163,9 @@ fsum(double *stack, cond_t *cond, pc_t *pc)
     --(cond->fsp);
     if (((arith_cmd_t *) pc->pcmd)->mode_flag)
     {
-        stack[cond->fsp] = stack[cond->fsp + 1] + stack[cond->fsp];
+        stack[cond->fsp] = stack[(cond->fsp + 1) & 7] + stack[cond->fsp];
     } else {
-        stack[cond->fsp] = stack[cond->fsp] + stack[cond->fsp + 1];
+        stack[cond->fsp] = stack[cond->fsp] + stack[(cond->fsp + 1) & 7];
     }
     pc->pcmd += sizeof (arith_cmd_t);
 }
@@ -162,9 +176,9 @@ fmul(double *stack, cond_t *cond, pc_t *pc)
     --(cond->fsp);
     if (((arith_cmd_t *) pc->pcmd)->mode_flag)
     {
-        stack[cond->fsp] = stack[cond->fsp + 1] * stack[cond->fsp];
+        stack[cond->fsp] = stack[(cond->fsp + 1) & 7] * stack[cond->fsp];
     } else {
-        stack[cond->fsp] = stack[cond->fsp] * stack[cond->fsp + 1];
+        stack[cond->fsp] = stack[cond->fsp] * stack[(cond->fsp + 1) & 7];
     }
     pc->pcmd += sizeof (arith_cmd_t);
 }
@@ -175,9 +189,9 @@ fdiv(double *stack, cond_t *cond, pc_t *pc)
     --(cond->fsp);
     if (((arith_cmd_t *) pc->pcmd)->mode_flag)
     {
-        stack[cond->fsp] = stack[cond->fsp + 1] / stack[cond->fsp];
+        stack[cond->fsp] = stack[(cond->fsp + 1) & 7] / stack[cond->fsp];
     } else {
-        stack[cond->fsp] = stack[cond->fsp] / stack[cond->fsp + 1];
+        stack[cond->fsp] = stack[cond->fsp] / stack[(cond->fsp + 1) & 7];
     }
     pc->pcmd += sizeof (arith_cmd_t);
 }
@@ -188,9 +202,9 @@ fpow(double *stack, cond_t *cond, pc_t *pc)
     --(cond->fsp);
     if (((arith_cmd_t *) pc->pcmd)->mode_flag)
     {
-        stack[cond->fsp] = pow(stack[cond->fsp + 1], stack[cond->fsp]);
+        stack[cond->fsp] = pow(stack[(cond->fsp + 1) & 7], stack[cond->fsp]);
     } else {
-        stack[cond->fsp] = pow(stack[cond->fsp], stack[cond->fsp + 1]);
+        stack[cond->fsp] = pow(stack[cond->fsp], stack[(cond->fsp + 1) & 7]);
     }
     pc->pcmd += sizeof (arith_cmd_t);
 }
@@ -201,9 +215,9 @@ flog(double *stack, cond_t *cond, pc_t *pc)
     --(cond->fsp);
     if (((arith_cmd_t *) pc->pcmd)->mode_flag)
     {
-        stack[cond->fsp] = _log(stack[cond->fsp + 1], stack[cond->fsp]);
+        stack[cond->fsp] = _log(stack[(cond->fsp + 1) & 7], stack[cond->fsp]);
     } else {
-        stack[cond->fsp] = _log(stack[cond->fsp], stack[cond->fsp + 1]);
+        stack[cond->fsp] = _log(stack[cond->fsp], stack[(cond->fsp + 1) & 7]);
     }
     pc->pcmd += sizeof (arith_cmd_t);
 }
@@ -211,49 +225,49 @@ flog(double *stack, cond_t *cond, pc_t *pc)
 inline void
 fsin(double *stack, cond_t *cond, pc_t *pc)
 {
-    EXPR(stack[cond->fsp - ((trig_cmd_t *) pc->pcmd)->r], sin);
+    EXPR(stack[(cond->fsp - ((trig_cmd_t *) pc->pcmd)->r) & 7], sin);
     pc->pcmd += sizeof (trig_cmd_t);
 }
 
 inline void
 fcos(double *stack, cond_t *cond, pc_t *pc)
 {
-    EXPR(stack[cond->fsp - ((trig_cmd_t *) pc->pcmd)->r], cos);
+    EXPR(stack[(cond->fsp - ((trig_cmd_t *) pc->pcmd)->r) & 7], cos);
     pc->pcmd += sizeof (trig_cmd_t);
 }
 
 inline void
 ftan(double *stack, cond_t *cond, pc_t *pc)
 {
-    EXPR(stack[cond->fsp - ((trig_cmd_t *) pc->pcmd)->r], tan);
+    EXPR(stack[(cond->fsp - ((trig_cmd_t *) pc->pcmd)->r) & 7], tan);
     pc->pcmd += sizeof (trig_cmd_t);
 }
 
 inline void
 fctan(double *stack, cond_t *cond, pc_t *pc)
 {
-    EXPR(stack[cond->fsp - ((trig_cmd_t *) pc->pcmd)->r], _ctan);
+    EXPR(stack[(cond->fsp - ((trig_cmd_t *) pc->pcmd)->r) & 7], _ctan);
     pc->pcmd += sizeof (trig_cmd_t);
 }
 
 inline void
 fasin(double *stack, cond_t *cond, pc_t *pc)
 {
-    EXPR(stack[cond->fsp - ((trig_cmd_t *) pc->pcmd)->r], asin);
+    EXPR(stack[(cond->fsp - ((trig_cmd_t *) pc->pcmd)->r) & 7], asin);
     pc->pcmd += sizeof (trig_cmd_t);
 }
 
 inline void
 facos(double *stack, cond_t *cond, pc_t *pc)
 {
-    EXPR(stack[cond->fsp - ((trig_cmd_t *) pc->pcmd)->r], acos);
+    EXPR(stack[(cond->fsp - ((trig_cmd_t *) pc->pcmd)->r) & 7], acos);
     pc->pcmd += sizeof (trig_cmd_t);
 }
 
 inline void
 fatan(double *stack, cond_t *cond, pc_t *pc)
 {
-    EXPR(stack[cond->fsp - ((trig_cmd_t *) pc->pcmd)->r], atan);
+    EXPR(stack[(cond->fsp - ((trig_cmd_t *) pc->pcmd)->r) & 7], atan);
     pc->pcmd += sizeof (trig_cmd_t);
 }
 
@@ -261,14 +275,14 @@ fatan(double *stack, cond_t *cond, pc_t *pc)
 inline void
 fact(double *stack, cond_t *cond, pc_t *pc)
 {
-    EXPR(stack[cond->fsp - ((trig_cmd_t *) pc->pcmd)->r], _actan);
+    EXPR(stack[(cond->fsp - ((trig_cmd_t *) pc->pcmd)->r) & 7], _actan);
     pc->pcmd += sizeof (trig_cmd_t);
 }
 
 inline void
 fld_reg(double *stack, cond_t *cond, pc_t *pc)
 {
-    stack[cond->fsp + 1] = stack[cond->fsp - ((ld_cmd_reg_t *) pc->pcmd)->reg];
+    stack[(cond->fsp + 1) & 7] = stack[(cond->fsp - ((ld_cmd_reg_t *) pc->pcmd)->reg) & 7];
     ++(cond->fsp);
     pc->pcmd += sizeof (ld_cmd_reg_t);
 }
@@ -276,7 +290,7 @@ fld_reg(double *stack, cond_t *cond, pc_t *pc)
 inline void
 push_reg(double *stack, cond_t *cond, sp_t *sp, pc_t *pc)
 {
-    *(double *)sp->top = stack[cond->fsp - ((ld_cmd_reg_t *) pc->pcmd)->reg];
+    *(double *)sp->top = stack[(cond->fsp - ((ld_cmd_reg_t *) pc->pcmd)->reg) & 7];
     sp->top += sizeof (double);
     pc->pcmd += sizeof (ld_cmd_reg_t);
 }
@@ -312,7 +326,7 @@ inline void
 fld_mem(double *stack, cond_t *cond, pc_t *pc, uint8_t *mem)
 {
     ++(cond->fsp);
-    stack[cond->fsp] = mem[*(uint16_t *) ((ld_cmd_mem_t *) pc->pcmd)->offset];
+    stack[cond->fsp] = ((double *) mem)[*(int16_t *) ((ld_cmd_mem_t *) pc->pcmd)->offset / sizeof (double) - 1];
     pc->pcmd += sizeof (ld_cmd_mem_t);
 }
 

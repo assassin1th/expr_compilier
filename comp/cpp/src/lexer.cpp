@@ -110,7 +110,7 @@ Lexer::scan()
             readch();
         } while (isalnum(*m_peek));
 
-        TABLE_TYPE::iterator it = m_tab.find(buf);
+        Table::iterator it = m_tab.find(buf);
 
         if (it == m_tab.end()) {
             const std::shared_ptr<const Token> w (new Word(Tag::ID, buf));
@@ -132,7 +132,7 @@ Lexer::scan()
                 readch();
             } while (isdigit(*m_peek));
         }
-        TABLE_TYPE::iterator it = m_tab.find(buf);
+        Table::iterator it = m_tab.find(buf);
         if (it == m_tab.end())
         {
             const std::shared_ptr<const Token> r (new Real(buf));
@@ -142,7 +142,7 @@ Lexer::scan()
         return it->second;
     }
     buf.push_back(*m_peek);
-    TABLE_TYPE::iterator it = m_tab.find(buf);
+    Table::iterator it = m_tab.find(buf);
     if (it == m_tab.end())
     {
         const std::shared_ptr<const Token> t(new Token(*m_peek));

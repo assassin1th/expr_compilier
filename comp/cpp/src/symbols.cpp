@@ -1,7 +1,6 @@
 #include "comp/cpp/include/symbols.h"
 
 using namespace Symbols;
-using Containers::Table;
 using Inter::Id;
 using CompLexer::Token;
 
@@ -28,7 +27,7 @@ Env::get(const std::shared_ptr<const Token> &w)
 {
     for (Env *e = this; e != nullptr; e = e->m_prev)
     {
-        TABLE_TYPE::iterator it = m_tab.find(w->val());
+        Table::iterator it = m_tab.find(w->val());
         if (it != m_tab.end())
         {
             return it->second;

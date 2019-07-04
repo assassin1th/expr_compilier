@@ -20,10 +20,13 @@ class FuncDecl : public Stmt
 {
 public:
     FuncDecl(const std::shared_ptr<const CompLexer::Token> &id,
-             const std::shared_ptr<const Stmt> &func_expr);
+             const std::shared_ptr<const Stmt> &func_expr,
+             size_t n_arg);
     virtual ~FuncDecl();
     virtual const std::string gen() const;
+    size_t n_arg() const;
 private:
+    const size_t m_n_arg;
     const std::shared_ptr<const CompLexer::Token> m_id;
     const std::shared_ptr<const Stmt> m_func_expr;
 };
