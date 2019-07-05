@@ -57,6 +57,9 @@ public:
     Lexer(const std::string &src);
     virtual ~Lexer();
     virtual std::shared_ptr<const Token> scan();
+    const std::string::const_iterator &end_curr_tok() const;
+    const std::string::const_iterator &start_curr_tok() const;
+    const std::string &src_str() const;
 #ifdef __COMP_LEXER_TEST__
     const std::string test();
 #endif // LEXER_TEST_
@@ -67,6 +70,7 @@ protected:
     void readch();
     bool readch(int c);
     std::string::const_iterator m_peek;
+    std::string::const_iterator m_start_tok;
     using Table = std::unordered_map<std::string, std::shared_ptr<const Token>>;
     Table m_tab;
 

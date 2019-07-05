@@ -1,5 +1,6 @@
 #include "comp/cpp/include/parser.h"
 #include <iostream>
+#include "comp/cpp/include/compexcept.h"
 
 using namespace CompParser;
 using CompLexer::Lexer;
@@ -44,9 +45,10 @@ Parser::match(int tag)
     {
         move();
     } else {
-        std::cerr << "error: expeted" << tag << std::endl;
-        std::cerr << "recieved - " << m_look->tag() << std::endl;
-        std::cerr << m_look->val() << std::endl;
+        throw CompExept::UnexpectedSymbol(m_lex->src_str(),
+                                          m_lex->start_curr_tok(),
+                                          m_lex->end_curr_tok(),
+                                          tag);
     }
 }
 

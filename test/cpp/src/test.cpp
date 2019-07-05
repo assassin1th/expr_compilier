@@ -156,7 +156,8 @@ get_func_interface_tests(std::vector<struct func_interface_test> &tests)
 
         if (!in.is_open())
         {
-            std::cerr << "unknown file: " << DEFAULT_TEST_FILE_PREF + std::to_string(i);
+            std::cerr << "unknown file: " << DEFAULT_TEST_FILE_PREF + std::to_string(i)
+                      << std::endl;
             continue;
         }
         if (!getline(in, line))
@@ -198,8 +199,15 @@ test_func_interface()
             std::cout << n << " ";
         }
         std::cout << std::endl;
-        ExprCompilier::Function foo(tests[i].m_str.c_str());
-        std::cout << "calc result: " << foo(tests[i].m_args.data()) << std::endl;
+        try
+        {
+            ExprCompilier::Function foo(tests[i].m_str.c_str());
+            std::cout << "calc result: " << foo(tests[i].m_args.data()) << std::endl;
+        }
+        catch (std::exception &e)
+        {
+            std::cerr << e.what() << std::endl;
+        }
     }
 }
 

@@ -103,6 +103,7 @@ Lexer::scan()
         }
     }
     std::string buf = std::string();
+    m_start_tok = m_peek;
     if (isalpha(*m_peek))
     {
         do {
@@ -152,6 +153,24 @@ Lexer::scan()
     }
     readch();
     return it->second;
+}
+
+const std::string::const_iterator &
+Lexer::start_curr_tok() const
+{
+    return m_start_tok;
+}
+
+const std::string::const_iterator &
+Lexer::end_curr_tok() const
+{
+    return m_peek;
+}
+
+const std::string &
+Lexer::src_str() const
+{
+    return m_src_str;
 }
 
 #ifdef __COMP_LEXER_TEST__
