@@ -5,6 +5,7 @@
 #include "comp/cpp/include/parser.h"
 #include "asm/cpp/include/asmparser.h"
 #include "function/cpp/include/exprcompilier.h"
+#include "comp/cpp/include/compexcept.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -162,13 +163,15 @@ get_func_interface_tests(std::vector<struct func_interface_test> &tests)
         }
         if (!getline(in, line))
         {
-            std::cerr << "unexpected end of test file" << std::endl;
+            std::cerr << "unexpected end of test file: " << DEFAULT_TEST_FILE_PREF + std::to_string(i)
+                      << std::endl;
             continue;
         }
         tst.m_str = line;
         if (!getline(in, line))
         {
-            std::cerr << "unexpected end of test file" << std::endl;
+            std::cerr << "unexpected end of test file: " << DEFAULT_TEST_FILE_PREF + std::to_string(i)
+                      << std::endl;
             continue;
         }
         std::istringstream iss(line);
@@ -204,7 +207,7 @@ test_func_interface()
             ExprCompilier::Function foo(tests[i].m_str.c_str());
             std::cout << "calc result: " << foo(tests[i].m_args.data()) << std::endl;
         }
-        catch (std::exception &e)
+        catch (CompExcept::Exception &e)
         {
             std::cerr << e.what() << std::endl;
         }

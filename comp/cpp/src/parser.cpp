@@ -45,7 +45,7 @@ Parser::match(int tag)
     {
         move();
     } else {
-        throw CompExept::UnexpectedSymbol(m_lex->src_str(),
+        throw CompExcept::UnexpectedSymbol(m_lex->src_str(),
                                           m_lex->start_curr_tok(),
                                           m_lex->end_curr_tok(),
                                           tag);
@@ -67,26 +67,36 @@ Parser::func()
     match('(');
     if (m_look->tag() != ')')
     {
-        do {
+        do
+        {
             if (m_look->tag() == Tag::ID)
             {
                 if (m_env->get(m_look))
                 {
-                    std::cerr << "used: " << m_look->val() << std::endl;
-                } else {
+                    throw CompExcept::AlreadyUsedVariable(m_look->val());
+                }
+                else
+                {
                     m_env->set(m_look,
                                std::shared_ptr<Id> (new Id(m_look, m_used)));
                     m_used += sizeof(double);
                 }
                 move();
             }
+            else
+            {
+                throw CompExcept::UnexpectedSymbol(m_lex->src_str(),
+                                                   m_lex->start_curr_tok(),
+                                                   m_lex->end_curr_tok(),
+                                                   Tag::ID);
+            }
             if (m_look->tag() == ')')
             {
                 break;
             }
-            std::cout << m_look->tag() << std::endl;
             match(',');
-        } while (true);
+        }
+        while (true);
     }
     move();
     match('=');
@@ -192,10 +202,11 @@ Parser::factor()
             x = call();
             break;
         default:
-            std::cerr << "syntax error1" << std::endl;
-            std::cerr << m_look->val() << std::endl;
-            std::cerr << m_look->tag() << std::endl;
-            break;
+            throw CompExcept::SyntaxError(m_lex->src_str(),
+                                         m_lex->start_curr_tok(),
+                                         m_lex->end_curr_tok(),
+                                         "expected REAL, TRIG function, LOG function,"
+                                         "function or variable name");
     }
     return x;
 }
@@ -226,7 +237,7 @@ Parser::call()
         std::shared_ptr<const Expr> i = m_env->get(tmp);
         if (i == nullptr)
         {
-            std::cerr << "undeclared variable: " << tmp->val() << std::endl;
+            throw CompExcept::UndefinedVariable(tmp->val());
         }
         return i;
     }

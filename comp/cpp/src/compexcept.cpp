@@ -1,6 +1,20 @@
 #include "comp/cpp/include/compexcept.h"
 
-using namespace CompExept;
+using namespace CompExcept;
+
+Exception::Exception()
+{
+}
+
+Exception::~Exception()
+{
+}
+
+const char *
+Exception::what() const
+{
+    return "CompExecp::Exception";
+}
 
 UnexpectedSymbol::UnexpectedSymbol(const std::string &src,
                          const std::string::const_iterator &start,
@@ -58,7 +72,7 @@ UnexpectedSymbol::UnexpectedSymbol(const std::string &src,
             m_msg += "REAL";
             break;
         default:
-            m_msg += *start;
+            m_msg += "'" + std::string(sizeof (char), expected_sym) + "'";
             break;
     }
 }
@@ -68,7 +82,72 @@ UnexpectedSymbol::~UnexpectedSymbol()
 }
 
 const char *
-UnexpectedSymbol::what()
+UnexpectedSymbol::what() const
+{
+    return m_msg.c_str();
+}
+
+SyntaxError::SyntaxError(const std::string &src,
+                         const std::string::const_iterator &start,
+                         const std::string::const_iterator &end,
+                         const std::string &msg) :
+    m_msg(src)
+{
+    if (m_msg.back() != '\n')
+    {
+        m_msg.push_back('\n');
+    }
+    for (std::string::const_iterator it = src.begin(); it < start; ++it)
+    {
+        m_msg.push_back('~');
+    }
+    for (std::string::const_iterator it = start; it < end; ++it)
+    {
+        m_msg.push_back('^');
+    }
+    for (std::string::const_iterator it = end; it < src.end(); ++it)
+    {
+        m_msg.push_back('~');
+    }
+    m_msg += "\n" + msg;
+}
+
+SyntaxError::~SyntaxError()
+{
+}
+
+const char *
+SyntaxError::what() const
+{
+    return m_msg.c_str();
+}
+
+UndefinedVariable::UndefinedVariable(const std::string &var_name) :
+    m_msg("Undefined variable - " + var_name)
+{
+}
+
+UndefinedVariable::~UndefinedVariable()
+{
+}
+
+const char *
+UndefinedVariable::what() const
+{
+    return m_msg.c_str();
+}
+
+AlreadyUsedVariable::AlreadyUsedVariable(const std::string &var_name) :
+    m_msg("Already used variable " + var_name)
+{
+}
+
+AlreadyUsedVariable::~AlreadyUsedVariable()
+{
+}
+
+const char *
+AlreadyUsedVariable::what() const
 {
     return m_msg.c_str();
 }
