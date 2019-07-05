@@ -22,6 +22,7 @@ Function::Function(const std::string &src) :
              "creating AsmParser::Parser");
     TEST_MSG(const std::shared_ptr<const AsmObject::ObjectFile> file = apar.parse(),
              "creating AsmObject::ObjectFile");
+    m_sym = file->find_sym();
     TEST_MSG(objs.add_file(file),
              "add file to object files collection");
     TEST_MSG(m_byte_code = file->compile(&objs),
@@ -30,6 +31,7 @@ Function::Function(const std::string &src) :
 
 Function::~Function()
 {
+    objs.delete_file(m_sym);
 }
 
 const std::string &

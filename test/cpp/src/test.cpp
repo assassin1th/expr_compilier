@@ -11,7 +11,7 @@
 #include <fstream>
 #include <sstream>
 #define DEF_ACCURANCY 1000000
-#define TESTS 50
+#define TESTS 22
 #define DEFAULT_TEST_FILE_PREF "test/tests/test"
 
 struct vm_test_res
@@ -20,7 +20,7 @@ struct vm_test_res
     double res;
 };
 
-struct vm_test_res vm_tests[] =
+static struct vm_test_res vm_tests[] =
 {
     {
         .prog = "\x16\x66\x66\x66\x66\x66\x66\x24\x40\x16\x33\x33\x33\x33\x33\x33\x34\x40\x21\0",
@@ -60,7 +60,7 @@ struct comp_lexer_test_res
     std::string res;
 };
 
-struct comp_lexer_test_res comp_lex_tests[] =
+static struct comp_lexer_test_res comp_lex_tests[] =
 {
     {
         .str = "hi, my name is Artemiy, i am 20.4 year old",
@@ -99,7 +99,7 @@ struct comp_parser_test_res
     std::string res;
 };
 
-struct comp_parser_test_res comp_parser_tests[] =
+static struct comp_parser_test_res comp_parser_tests[] =
 {
     {
         .str = "test1(x,y)=2 + 2*sin(2/3 * 4) / x ^ y ^ y",
@@ -157,21 +157,20 @@ get_func_interface_tests(std::vector<struct func_interface_test> &tests)
 
         if (!in.is_open())
         {
-            std::cerr << "unknown file: " << DEFAULT_TEST_FILE_PREF + std::to_string(i)
-                      << std::endl;
+            std::cerr << "unknown file: " << DEFAULT_TEST_FILE_PREF << i << std::endl;
             continue;
         }
         if (!getline(in, line))
         {
-            std::cerr << "unexpected end of test file: " << DEFAULT_TEST_FILE_PREF + std::to_string(i)
-                      << std::endl;
+            std::cerr << "unexpected end of test file: " << DEFAULT_TEST_FILE_PREF
+                      << i << std::endl;
             continue;
         }
         tst.m_str = line;
         if (!getline(in, line))
         {
-            std::cerr << "unexpected end of test file: " << DEFAULT_TEST_FILE_PREF + std::to_string(i)
-                      << std::endl;
+            std::cerr << "unexpected end of test file: " << DEFAULT_TEST_FILE_PREF
+                      << i << std::endl;
             continue;
         }
         std::istringstream iss(line);

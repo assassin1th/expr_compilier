@@ -2,6 +2,23 @@
 #define FUNCTION_H_
 
 #include <string>
+#include <memory>
+
+namespace CompExcept
+{
+class Exception
+{
+public:
+    Exception();
+    ~Exception();
+    const char *what() const;
+};
+}
+
+namespace AsmInter
+{
+    class Label;
+}
 
 namespace ExprCompilier
 {
@@ -16,6 +33,7 @@ public:
 private:
     std::string m_byte_code;
     size_t m_n_args;
+    std::shared_ptr<const AsmInter::Label> m_sym;
 };
 
 }

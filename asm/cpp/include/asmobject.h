@@ -31,7 +31,7 @@ public:
     ~SymTable();
     int set_sym(const std::string &key,
                 const std::shared_ptr<const AsmInter::Label> &sym);
-    const std::shared_ptr<const AsmInter::Label> get_sym(const std::string &key) const;
+    const std::shared_ptr<const AsmInter::Label> get_sym() const;
     const std::shared_ptr<const AsmInter::Stmt> solve(DefinedSymTable *st,
                                                       const Objects *objs,
                                                       int16_t global_offset,
@@ -47,7 +47,7 @@ public:
     ObjectFile(const SymTable *st,
                const std::shared_ptr<const AsmInter::Stmt> &code);
     ~ObjectFile();
-    bool find_sym(const std::shared_ptr<const AsmInter::Label> &sym) const;
+    const std::shared_ptr<const AsmInter::Label> find_sym() const;
     const std::shared_ptr<const AsmInter::Stmt> solve(DefinedSymTable *st,
                                                       const Objects *objs,
                                                       int16_t global_offset) const;
@@ -64,8 +64,11 @@ public:
     ~Objects();
     const std::shared_ptr<const ObjectFile> get_file(const std::shared_ptr<const AsmInter::Label> &sym) const;
     int add_file(const std::shared_ptr<const ObjectFile> &file);
+    int delete_file(const std::shared_ptr<const AsmInter::Label> &sym);
+    size_t n_files() const;
 private:
-    std::vector<std::shared_ptr<const ObjectFile>> files;
+    using Table = std::unordered_map<std::string, std::shared_ptr<const ObjectFile>>;
+    Table m_files;
 };
 
 }

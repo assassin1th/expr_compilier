@@ -1,4 +1,5 @@
 #include "asm/cpp/include/asmobject.h"
+#include "asm/cpp/include/asmexcept.h"
 #include <iostream>
 using namespace AsmObject;
 
@@ -23,17 +24,16 @@ SymTable::set_sym(const std::string &key,
 }
 
 const std::shared_ptr<const AsmInter::Label>
-SymTable::get_sym(const std::string &key) const
+SymTable::get_sym() const
 {
-    Table::const_iterator it = m_tab.find(key);
-    if (it == m_tab.end())
+    for (const auto &n : m_tab)
     {
-        return nullptr;
+        if (n.second->tag() == AsmInter::LabelTag::DEFINED)
+        {
+            return n.second;
+        }
     }
-    else
-    {
-        return it->second;
-    }
+    return nullptr;
 }
 
 const std::shared_ptr<const AsmInter::Stmt>
@@ -121,15 +121,10 @@ ObjectFile::~ObjectFile()
     delete m_st;
 }
 
-bool
-ObjectFile::find_sym(const std::shared_ptr<const AsmInter::Label> &sym) const
+const std::shared_ptr<const AsmInter::Label>
+ObjectFile::find_sym() const
 {
-    std::shared_ptr<const AsmInter::Label> finded_sym = m_st->get_sym(sym->id());
-    if (finded_sym == nullptr || finded_sym->tag() == AsmInter::LabelTag::UNDEFINED)
-    {
-        return false;
-    }
-    return true;
+    return m_st->get_sym();
 }
 
 const std::shared_ptr<const AsmInter::Stmt>
@@ -162,19 +157,39 @@ Objects::~Objects()
 const std::shared_ptr<const ObjectFile>
 Objects::get_file(const std::shared_ptr<const AsmInter::Label> &sym) const
 {
-    for (const auto &n : files)
+    const Table::const_iterator &it = m_files.find(sym->id());
+    if (it == m_files.end())
     {
-        if (n->find_sym(sym))
-        {
-            return n;
-        }
+        return nullptr;
     }
-    return nullptr;
+    return it->second;
 }
 
 int
 Objects::add_file(const std::shared_ptr<const ObjectFile> &file)
 {
-    files.push_back(file);
+    if (m_files.find(file->find_sym()->id()) != m_files.end())
+    {
+        throw AsmExcept::RedefiningFunc(file->find_sym()->id());
+    }
+    m_files[file->find_sym()->id()] = file;
     return 0;
+}
+
+int
+Objects::delete_file(const std::shared_ptr<const AsmInter::Label> &sym)
+{
+    Table::const_iterator it = m_files.find(sym->id());
+    if (it == m_files.end())
+    {
+        return 1;
+    }
+    m_files.erase(it);
+    return 0;
+}
+
+size_t
+Objects::n_files() const
+{
+    return m_files.size();
 }

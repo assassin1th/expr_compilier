@@ -8,7 +8,7 @@
     std::cerr << msg << std::endl;\
     stmt;\
     std::cerr << "success executing stmt:" << std::endl << #stmt << std::endl \
-              << std::endl;
+              << std::endl
 #else
 #define TEST_MSG(stmt, msg) stmt
 #endif // __DEBUG__
